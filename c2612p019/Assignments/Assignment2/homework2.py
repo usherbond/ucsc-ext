@@ -1,6 +1,7 @@
 import math
 import numpy as np
 import pandas as pd
+from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 from scipy.stats import norm
 
@@ -129,15 +130,96 @@ def compute_probability_proc(data_frame, min_height, max_height, num_bins) :
 head_num = 50;
 
 #data_frame = pd.read_csv('Height.csv')
-data_frame = pd.read_excel('Assignment_2_Data_and_Template.xlsx',sheetname='Data')
-print data_frame.query('Sex=="Female"')
+#data_frame = pd.read_excel('Assignment_2_Data_and_Template.xlsx',sheetname='Data')
+data_frame = pd.read_excel('short.xlsx',sheetname='Data')
+#print data_frame.query('Sex=="Female"')
+print data_frame
 
-#data_frame["Total_Inches"] = data_frame["Height_Feet"]*12 + data_frame["Height_Inches"]
+min_height = data_frame["Height"].min()
+max_height = data_frame["Height"].max()
+min_handspan = data_frame["HandSpan"].min()
+max_handspan = data_frame["HandSpan"].max()
 
-#print data_frame
+print max_height
+print min_height
+print max_handspan
+print min_handspan
 
-#min_height = data_frame["Total_Inches"].min()
-#max_height = data_frame["Total_Inches"].max()
+print max_height-min_height
+print max_handspan-min_handspan
+
+#height_bins = 17
+#handspan_bins = 14
+height_bins = 9
+handspan_bins = 4
+#handspan_bins = 3
+
+male_hist = np.zeros((height_bins,handspan_bins),int)
+female_hist = np.zeros((height_bins,handspan_bins),int)
+
+# Hist:
+male_df = data_frame.query('Sex=="Male"')
+female_df = data_frame.query('Sex=="Female"')
+
+for index, row in male_df.iterrows():
+	#print index, row
+	hist_row = bin_index(row["Height"],height_bins,min_height,max_height)
+	hist_col = bin_index(row["HandSpan"],handspan_bins,min_handspan,max_handspan)
+	male_hist[hist_row,hist_col] = hist_row*handspan_bins + hist_col
+
+print male_hist
+
+for index, row in female_df.iterrows():
+	#print index, row
+	hist_row = bin_index(row["Height"],height_bins,min_height,max_height)
+	hist_col = bin_index(row["HandSpan"],handspan_bins,min_handspan,max_handspan)
+	female_hist[hist_row,hist_col] = hist_row*handspan_bins + hist_col
+
+print female_hist
+
+y = np.asfarray(range(height_bins))
+y_ticks = np.around(bin_center(y,height_bins,min_height,max_height),1)
+print y_ticks
+
+x = np.asfarray(range(handspan_bins))
+x_ticks = np.around(bin_center(x,handspan_bins,min_handspan,max_handspan),1)
+print x_ticks
+
+z = np.zeros((height_bins,handspan_bins),int)
+for i in x :
+	for j in y :
+		z[j,i] = j*handspan_bins + i
+print z
+
+#print male_df
+#print female_df
+#print data_frame.query('Sex=="Male"') 
+#for data in data_frame.query('Sex=="Male"') :
+#	print data
+	#male_bin_array[bin_index(data,num_bins,min_height,max_height)]+=1
+
+
+fig = plt.figure()
+ax1 = fig.add_subplot(111,projection='3d')
+
+#ax1.bar3d(x, y, z, dx, dy, dz, color='#00ceaa')
+#plt.show()
+
+X, Y = np.meshgrid(x, y)
+Z = np.zeros((height_bins,handspan_bins),int)
+print X.ravel()
+print Y
+print Z
+
+#ax1.plot_surface(X, Y, Z)
+#dx = np.ones((height_bins,handspan_bins))/2
+#dy = np.ones((height_bins,handspan_bins))/2
+dx = 1
+dy = 1
+dz = z
+ax1.bar3d(X.ravel(), Y.ravel(), Z.ravel(), dx, dy, dz.ravel(), color='b',alpha=0.5)
+plt.show()
+
 
 
 
