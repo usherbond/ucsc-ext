@@ -12,7 +12,14 @@ def bin_index(x, nb, xmin, xmax) :
 def bin_center(n, nb, xmin, xmax) :
 	"Returns the center of the bin range given the bin number"
 	# There is no round to allow this to be numpy array
-	return	n*(xmax-xmin)/(nb-1) + xmin
+	return	n*(xmax-xmin)/float(nb-1) + xmin
+
+def bin_bottom(n, nb, xmin, xmax) :
+	"Returns the center of the bin range given the bin number"
+	# There is no round to allow this to be numpy array
+	return	(2*n-1)*(xmax-xmin)/float(2*(nb-1)) + xmin
+
+
 
 def norm_pdf(x, mu, sigma) :
 	return ( math.exp( ((float(x-mu)/sigma)**2)/-2 ) 
@@ -130,8 +137,9 @@ def compute_probability_proc(data_frame, min_height, max_height, num_bins) :
 head_num = 50;
 
 #data_frame = pd.read_csv('Height.csv')
-#data_frame = pd.read_excel('Assignment_2_Data_and_Template.xlsx',sheetname='Data')
-data_frame = pd.read_excel('short.xlsx',sheetname='Data')
+data_frame = pd.read_excel('Assignment_2_Data_and_Template.xlsx',sheetname='Data')
+#data_frame = pd.read_excel('short.xlsx',sheetname='Data')
+#data_frame = pd.read_excel('dummy.xlsx',sheetname='Data')
 #print data_frame.query('Sex=="Female"')
 print data_frame
 
@@ -140,18 +148,36 @@ max_height = data_frame["Height"].max()
 min_handspan = data_frame["HandSpan"].min()
 max_handspan = data_frame["HandSpan"].max()
 
-print max_height
-print min_height
-print max_handspan
-print min_handspan
+print "Max height:",max_height
+print "Min height:",min_height
+print "Max handspan",max_handspan
+print "Min handspan",min_handspan
 
-print max_height-min_height
-print max_handspan-min_handspan
+#print max_height-min_height 
+#print max_handspan-min_handspan
+
+# with the assignment sprteadsheet the range height bins 22 and handspan bins 20 creates an array where all the integer values are in the middle or the 0.5 values in case of the handspan
+
+height_bins = int(max_height-min_height + 1)
+height_bins = 8
+handspan_bins = int(max_handspan-min_handspan +1)
+#handspan_bins = 20
+handspan_bins = 8
+
+
+print "Height bins:",height_bins
+print "Handspan bins:",handspan_bins
+
+height_width = float(max_height-min_height)/(height_bins-1)
+handspan_width = float(max_handspan-min_handspan)/(handspan_bins-1)
+
+print height_width
+print handspan_width
 
 #height_bins = 17
 #handspan_bins = 14
-height_bins = 9
-handspan_bins = 4
+#height_bins = 9
+#handspan_bins = 4
 #handspan_bins = 3
 
 male_hist = np.zeros((height_bins,handspan_bins),int)
@@ -161,11 +187,21 @@ female_hist = np.zeros((height_bins,handspan_bins),int)
 male_df = data_frame.query('Sex=="Male"')
 female_df = data_frame.query('Sex=="Female"')
 
+#print male_df
+#print female_df
+male_n = male_df['Sex'].count()
+female_n = female_df['Sex'].count()
+print "Number of males:",male_n
+print "Number of females:",female_n
+print "Total",female_n+male_n
+#exit()
+
 for index, row in male_df.iterrows():
 	#print index, row
 	hist_row = bin_index(row["Height"],height_bins,min_height,max_height)
 	hist_col = bin_index(row["HandSpan"],handspan_bins,min_handspan,max_handspan)
-	male_hist[hist_row,hist_col] = hist_row*handspan_bins + hist_col
+	#male_hist[hist_row,hist_col] = hist_row*handspan_bins + hist_col + 1
+	male_hist[hist_row,hist_col]+=1
 
 print male_hist
 
@@ -173,23 +209,73 @@ for index, row in female_df.iterrows():
 	#print index, row
 	hist_row = bin_index(row["Height"],height_bins,min_height,max_height)
 	hist_col = bin_index(row["HandSpan"],handspan_bins,min_handspan,max_handspan)
-	female_hist[hist_row,hist_col] = hist_row*handspan_bins + hist_col
+	#female_hist[hist_row,hist_col] = hist_row*handspan_bins + hist_col + 2
+	female_hist[hist_row,hist_col]+=1
 
 print female_hist
 
 y = np.asfarray(range(height_bins))
-y_ticks = np.around(bin_center(y,height_bins,min_height,max_height),1)
+# This is the bottom of the range but thats how the graph comes
+#y_ticks = np.around(bin_center(y,height_bins,min_height,max_height)-height_width/2,1)
+y_ticks = np.around(bin_bottom(y,height_bins,min_height,max_height),2)
 print y_ticks
+print np.around(bin_center(y,height_bins,min_height,max_height),2)
 
 x = np.asfarray(range(handspan_bins))
-x_ticks = np.around(bin_center(x,handspan_bins,min_handspan,max_handspan),1)
+x_ticks = np.around(bin_center(x,handspan_bins,min_handspan,max_handspan),2)
 print x_ticks
+print np.around(bin_bottom(x,handspan_bins,min_handspan,max_handspan),2)
 
 z = np.zeros((height_bins,handspan_bins),int)
 for i in x :
 	for j in y :
-		z[j,i] = j*handspan_bins + i
+		z[j,i] = j*handspan_bins + i + 1
 print z
+
+#male_hist[2,1] = 2
+male_rows,male_cols = np.nonzero(male_hist)
+male_val = male_hist[male_rows,male_cols]
+print male_rows,male_cols
+print male_val
+
+#female_hist[2,1] = 5
+female_rows,female_cols = np.nonzero(female_hist)
+female_val = female_hist[female_rows,female_cols]
+print female_rows,female_cols
+print female_val
+
+
+#y = np.asfarray(range(height_bins))
+#x = np.asfarray(range(handspan_bins))
+
+#y_ticks = np.around(bin_center(y,height_bins,min_height,max_height)-height_width/2,1)
+#x_ticks = np.around(bin_center(x,handspan_bins,min_handspan,max_handspan)-handspan_width/2,1)
+
+
+fig = plt.figure()
+ax1 = fig.add_subplot(111,projection='3d')
+#y_ticks = np.around(bin_bottom(y,height_bins,min_height,max_height),1)
+ax1.bar3d(
+	(bin_bottom(female_rows,height_bins,min_height,max_height)),
+	(bin_bottom(female_cols,handspan_bins,min_handspan,max_handspan)),
+	np.zeros(len(female_val),int),
+	height_width,
+	handspan_width,
+	female_val,
+	color='r',
+	alpha=0.5)
+
+ax1.bar3d(
+	(bin_bottom(male_rows,height_bins,min_height,max_height)),
+	(bin_bottom(male_cols,handspan_bins,min_handspan,max_handspan)),
+	np.zeros(len(male_val),int),
+	height_width,
+	handspan_width,
+	male_val,
+	color='b',
+	alpha=0.5)
+
+plt.show()
 
 #print male_df
 #print female_df
@@ -199,14 +285,11 @@ print z
 	#male_bin_array[bin_index(data,num_bins,min_height,max_height)]+=1
 
 
+'''
 fig = plt.figure()
 ax1 = fig.add_subplot(111,projection='3d')
-
-#ax1.bar3d(x, y, z, dx, dy, dz, color='#00ceaa')
-#plt.show()
-
 X, Y = np.meshgrid(x, y)
-Z = np.zeros((height_bins,handspan_bins),int)
+Zhandspan_binshandspan_bino = np.zeros((height_bins,handspan_bins),int)
 print X.ravel()
 print Y
 print Z
@@ -218,8 +301,15 @@ dx = 1
 dy = 1
 dz = z
 ax1.bar3d(X.ravel(), Y.ravel(), Z.ravel(), dx, dy, dz.ravel(), color='b',alpha=0.5)
-plt.show()
 
+secx= [1,2]
+secy =[2,3]
+secz =[0,0]
+valz =[20,21]
+valz2 =[3,5]
+ax1.bar3d(secx, secy, secz, 1, 1, valz, color='r',alpha=0.5)
+plt.show()
+'''
 
 
 
