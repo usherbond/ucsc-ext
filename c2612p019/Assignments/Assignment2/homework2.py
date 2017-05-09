@@ -198,8 +198,8 @@ print "Handspan bins:",handspan_bins
 height_width = float(max_height-min_height)/(height_bins-1)
 handspan_width = float(max_handspan-min_handspan)/(handspan_bins-1)
 
-print height_width
-print handspan_width
+print "height_width", height_width
+print "Handspan width", handspan_width
 
 #height_bins = 17
 #handspan_bins = 14
@@ -293,6 +293,23 @@ x = np.asfarray(range(handspan_bins))
 x_ticks = np.around(bin_center(x,handspan_bins,min_handspan,max_handspan),2)
 print x_ticks
 print np.around(bin_bottom(x,handspan_bins,min_handspan,max_handspan),2)
+
+# Reconstructing histogram from normal:
+#male_hist_rec = np.zeros((height_bins,handspan_bins),int)
+#female_hist_rec = np.zeros((height_bins,handspan_bins),int)
+male_hist_rec = np.zeros((height_bins,handspan_bins))
+female_hist_rec = np.zeros((height_bins,handspan_bins))
+for row in range(height_bins) :
+	for col in range(handspan_bins) :
+		heigth = bin_center(row,height_bins,min_height,max_height)
+		handspan = bin_center(col,handspan_bins,min_handspan,max_handspan)
+		male_pdf = norm_pdf([heigth,handspan],male_means,male_covar)
+		female_pdf = norm_pdf([heigth,handspan],female_means,female_covar)
+		male_hist_rec[row,col]=male_n*male_pdf*height_width*handspan_width
+		female_hist_rec[row,col]=female_n*female_pdf*height_width*handspan_width
+
+print np.round(male_hist_rec)
+print np.round(female_hist_rec)
 
 exit()
 
