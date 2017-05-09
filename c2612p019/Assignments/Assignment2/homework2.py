@@ -21,9 +21,28 @@ def bin_bottom(n, nb, xmin, xmax) :
 
 
 
-def norm_pdf(x, mu, sigma) :
-	return ( math.exp( ((float(x-mu)/sigma)**2)/-2 ) 
-			/ (math.sqrt(2*math.pi)*sigma) )
+#def norm_pdf(x, mu, sigma) :
+#	return ( math.exp( ((float(x-mu)/sigma)**2)/-2 ) 
+#			/ (math.sqrt(2*math.pi)*sigma) )
+
+def norm_pdf(x, mu, cov) :
+	d = len(mu)
+	#print d
+	xcenter = np.matrix(x-mu)
+	#print xcenter
+	covinv = np.matrix(np.linalg.inv(cov))
+	#print covinv
+	exparg = -0.5 * np.asscalar((xcenter * covinv) * xcenter.transpose())
+	#print exparg
+	det = (np.linalg.det(cov)) 
+	#print math.sqrt(abs(det))
+	#print (math.sqrt(2*math.pi))**d
+	div = ((math.sqrt(2*math.pi))**d) * math.sqrt(abs(det))
+	#print div
+	# det =-9.25185853854e-16 
+	pdf =  ( math.exp(exparg) / div )
+	#print pdf
+	return pdf
 
 ### From this point it should be a proceadure:
 #inputs:
@@ -136,12 +155,20 @@ def compute_probability_proc(data_frame, min_height, max_height, num_bins) :
 
 head_num = 50;
 
+#excel_file = 'short.xlsx'
+excel_file = 'Assignment_2_Data_and_Template.xlsx'
+
+
 #data_frame = pd.read_csv('Height.csv')
 #data_frame = pd.read_excel('Assignment_2_Data_and_Template.xlsx',sheetname='Data')
-#data_frame = pd.read_excel('short.xlsx',sheetname='Data')
-data_frame = pd.read_excel('dummy.xlsx',sheetname='Data')
+data_frame = pd.read_excel(excel_file,sheetname='Data')
+#data_frame = pd.read_excel('dummy.xlsx',sheetname='Data')
 #print data_frame.query('Sex=="Female"')
 print data_frame
+#queries = pd.read_excel('short.xlsx',sheetname='Queries',header=1,names=['Height','Handspan'] )
+queries = pd.read_excel(excel_file,sheetname='Queries',header=1)[['Height','Handspan']]
+#print queries
+#exit()
 
 min_height = data_frame["Height"].min()
 max_height = data_frame["Height"].max()
@@ -205,8 +232,8 @@ male_means = male_df[features].as_matrix().mean(axis=0)
 female_means = female_df[features].as_matrix().mean(axis=0)
 
 #numpy.cov(m, y=None, rowvar=True, bias=False, ddof=None, fweights=None, aweights=None)[source]
-male_covar = np.cov(male_df[['Height','HandSpan']], rowvar=False, ddof=1)
-female_covar = np.cov(female_df[['Height','HandSpan']], rowvar=False, ddof=1)
+male_covar = np.cov(male_df[features], rowvar=False, ddof=1)
+female_covar = np.cov(female_df[features], rowvar=False, ddof=1)
 
 print male_means
 print female_means
@@ -214,7 +241,28 @@ print female_means
 print male_covar
 print female_covar
 
-exit()
+
+#male_covar_inv = np.linalg.inv(male_covar)
+#female_covar_inv = np.linalg.inv(female_covar)
+
+#print male_covar_inv
+#print female_covar_inv
+#x = [72,21]
+#x = np.array([0,0])
+#mu = np.array([1,1])
+#sigma = [[9,1],[1,4]]
+#p = norm_pdf(x,male_means,male_covar)
+#p = norm_pdf(x,mu,sigma)
+#print p
+
+#mul = np.matmul(male_covar,male_covar_inv)
+#mul = np.matrix(male_covar)*np.matrix(male_covar_inv)
+#mul = np.matrix(female_covar)*np.matrix(female_covar_inv)
+#print mul
+
+
+
+#exit()
 
 for index, row in male_df.iterrows():
 	#print index, row
@@ -246,11 +294,27 @@ x_ticks = np.around(bin_center(x,handspan_bins,min_handspan,max_handspan),2)
 print x_ticks
 print np.around(bin_bottom(x,handspan_bins,min_handspan,max_handspan),2)
 
-z = np.zeros((height_bins,handspan_bins),int)
-for i in x :
-	for j in y :
-		z[j,i] = j*handspan_bins + i + 1
-print z
+
+# Fix in the formatting
+#print queries['Handspan']
+queries['Handspan'] = queries['Handspan'].str.strip()
+for index, row in queries.iterrows():
+	#print row.as_matrix()
+	rownum = pd.to_numeric(row).astype(float)
+	print rownum
+	#xval = pd.to_numeric(row).astype(float).as_matrix()
+	print rownum.as_matrix()
+
+exit()
+
+
+
+
+#z = np.zeros((height_bins,handspan_bins),int)
+#for i in x :
+#	for j in y :
+#		z[j,i] = j*handspan_bins + i + 1
+#print z
 
 #male_hist[2,1] = 2
 male_rows,male_cols = np.nonzero(male_hist)
