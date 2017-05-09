@@ -303,8 +303,31 @@ for index, row in queries.iterrows():
 	print rownum
 	#xval = pd.to_numeric(row).astype(float).as_matrix()
 	print rownum.as_matrix()
+	hist_row = bin_index(rownum["Height"],height_bins,min_height,max_height)
+	hist_col = bin_index(rownum["Handspan"],handspan_bins,min_handspan,max_handspan)
+	print "row",hist_row
+	print "col",hist_col
+	male_sample = male_hist[hist_row,hist_col]
+	female_sample = female_hist[hist_row,hist_col]
+	print "male_sample",male_sample
+	print "female_sample",female_sample
 
-exit()
+	try :
+		p_female_hist = ( float(female_sample)
+				/ (female_sample+male_sample) )
+	except ZeroDivisionError as err:
+		print "WARNING:",err
+		p_female_hist = float('NaN')
+	print "prob hist",p_female_hist
+
+	male_pdf = norm_pdf(rownum.as_matrix(),male_means,male_covar)
+	female_pdf = norm_pdf(rownum.as_matrix(),female_means,female_covar)
+	p_female_norm = ( float(female_n*female_pdf)
+			/ (female_n*female_pdf+male_n*male_pdf) )
+	print "prob norm",p_female_norm
+	
+
+#exit()
 
 
 
