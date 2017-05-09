@@ -295,8 +295,7 @@ print x_ticks
 print np.around(bin_bottom(x,handspan_bins,min_handspan,max_handspan),2)
 
 
-# Fix in the formatting
-#print queries['Handspan']
+# Fix in the formatting of Handspan that has leading spaces
 queries['Handspan'] = queries['Handspan'].str.strip()
 for index, row in queries.iterrows():
 	#print row.as_matrix()
