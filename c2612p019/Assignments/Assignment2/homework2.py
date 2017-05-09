@@ -137,9 +137,9 @@ def compute_probability_proc(data_frame, min_height, max_height, num_bins) :
 head_num = 50;
 
 #data_frame = pd.read_csv('Height.csv')
-data_frame = pd.read_excel('Assignment_2_Data_and_Template.xlsx',sheetname='Data')
+#data_frame = pd.read_excel('Assignment_2_Data_and_Template.xlsx',sheetname='Data')
 #data_frame = pd.read_excel('short.xlsx',sheetname='Data')
-#data_frame = pd.read_excel('dummy.xlsx',sheetname='Data')
+data_frame = pd.read_excel('dummy.xlsx',sheetname='Data')
 #print data_frame.query('Sex=="Female"')
 print data_frame
 
@@ -194,6 +194,26 @@ female_n = female_df['Sex'].count()
 print "Number of males:",male_n
 print "Number of females:",female_n
 print "Total",female_n+male_n
+
+#print male_df[['Height','HandSpan']]
+features = ['Height','HandSpan']
+#print male_df[features].as_matrix().mean(axis=0)
+#print features
+#male_means = male_df.mean()
+#female_means = female_df.mean()
+male_means = male_df[features].as_matrix().mean(axis=0)
+female_means = female_df[features].as_matrix().mean(axis=0)
+
+#numpy.cov(m, y=None, rowvar=True, bias=False, ddof=None, fweights=None, aweights=None)[source]
+male_covar = np.cov(male_df[['Height','HandSpan']], rowvar=False, ddof=1)
+female_covar = np.cov(female_df[['Height','HandSpan']], rowvar=False, ddof=1)
+
+print male_means
+print female_means
+
+print male_covar
+print female_covar
+
 exit()
 
 for index, row in male_df.iterrows():
