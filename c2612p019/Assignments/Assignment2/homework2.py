@@ -194,7 +194,7 @@ female_n = female_df['Sex'].count()
 print "Number of males:",male_n
 print "Number of females:",female_n
 print "Total",female_n+male_n
-#exit()
+exit()
 
 for index, row in male_df.iterrows():
 	#print index, row
