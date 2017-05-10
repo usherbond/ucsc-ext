@@ -44,6 +44,101 @@ def norm_pdf(x, mu, cov) :
 	#print pdf
 	return pdf
 
+def plot_histogram(m_hist, f_hist,row_max,row_min,col_max,col_min):
+	print "Building bar graph"
+	row_bins, col_bins = m_hist.shape
+	print "row_bins", row_bins
+	print "col_bins", col_bins
+
+	row_width = float(row_max-row_min)/(row_bins-1)
+	col_width = float(col_max-col_min)/(col_bins-1)
+	print "row_width",row_width
+	print "col_width",col_width
+
+	m_rows,m_cols = np.nonzero(m_hist)
+	m_val = m_hist[m_rows,m_cols]
+	f_rows,f_cols = np.nonzero(f_hist)
+	f_val = f_hist[f_rows,f_cols]
+
+	fig = plt.figure()
+	ax1 = fig.add_subplot(111,projection='3d')
+	ax1.bar3d(
+		(bin_bottom(f_rows,row_bins,row_min,row_max)),
+		(bin_bottom(f_cols,col_bins,col_min,col_max)),
+		np.zeros(len(f_val),int),
+		row_width,
+		col_width,
+		f_val,
+		color='r',
+		alpha=0.5)
+
+	ax1.bar3d(
+		(bin_bottom(m_rows,row_bins,row_min,row_max)),
+		(bin_bottom(m_cols,col_bins,col_min,col_max)),
+		np.zeros(len(m_val),int),
+		row_width,
+		col_width,
+		m_val,
+		color='b',
+		alpha=0.5)
+
+	plt.show()
+
+
+"""
+male_rows,male_cols = np.nonzero(male_hist)
+male_val = male_hist[male_rows,male_cols]
+print male_rows,male_cols
+print male_val
+
+#female_hist[2,1] = 5
+female_rows,female_cols = np.nonzero(female_hist)
+female_val = female_hist[female_rows,female_cols]
+print female_rows,female_cols
+print female_val
+
+#row, col = male_hist.shape
+#print row
+#print col
+
+exit()
+
+#y = np.asfarray(range(height_bins))
+#x = np.asfarray(range(handspan_bins))
+
+#y_ticks = np.around(bin_center(y,height_bins,min_height,max_height)-height_width/2,1)
+#x_ticks = np.around(bin_center(x,handspan_bins,min_handspan,max_handspan)-handspan_width/2,1)
+
+
+fig = plt.figure()
+ax1 = fig.add_subplot(111,projection='3d')
+#y_ticks = np.around(bin_bottom(y,height_bins,min_height,max_height),1)
+ax1.bar3d(
+	(bin_bottom(female_rows,height_bins,min_height,max_height)),
+	(bin_bottom(female_cols,handspan_bins,min_handspan,max_handspan)),
+	np.zeros(len(female_val),int),
+	height_width,
+	handspan_width,
+	female_val,
+	color='r',
+	alpha=0.5)
+
+ax1.bar3d(
+	(bin_bottom(male_rows,height_bins,min_height,max_height)),
+	(bin_bottom(male_cols,handspan_bins,min_handspan,max_handspan)),
+	np.zeros(len(male_val),int),
+	height_width,
+	handspan_width,
+	male_val,
+	color='b',
+	alpha=0.5)
+
+plt.show()
+"""
+
+
+
+
 ### From this point it should be a proceadure:
 #inputs:
 # - data frame
@@ -185,11 +280,12 @@ print "Min handspan",min_handspan
 
 # with the assignment sprteadsheet the range height bins 22 and handspan bins 20 creates an array where all the integer values are in the middle or the 0.5 values in case of the handspan
 
-height_bins = int(max_height-min_height + 1)
-height_bins = 8
-handspan_bins = int(max_handspan-min_handspan +1)
-#handspan_bins = 20
-handspan_bins = 8
+#height_bins = int(max_height-min_height + 1)
+height_bins = 22
+#height_bins = 8
+#handspan_bins = int(max_handspan-min_handspan +1)
+handspan_bins = 20
+#handspan_bins = 8
 
 
 print "Height bins:",height_bins
@@ -311,7 +407,7 @@ for row in range(height_bins) :
 print np.round(male_hist_rec)
 print np.round(female_hist_rec)
 
-exit()
+#exit()
 
 # Fix in the formatting of Handspan that has leading spaces
 queries['Handspan'] = queries['Handspan'].str.strip()
@@ -347,8 +443,11 @@ for index, row in queries.iterrows():
 
 #exit()
 
+#plot_histogram(male_hist, female_hist,max_height,min_height,max_handspan,min_handspan)
+#plot_histogram(np.round(male_hist_rec,1), np.round(female_hist_rec,1),max_height,min_height,max_handspan,min_handspan)
 
 
+'''
 
 #z = np.zeros((height_bins,handspan_bins),int)
 #for i in x :
@@ -367,6 +466,10 @@ female_rows,female_cols = np.nonzero(female_hist)
 female_val = female_hist[female_rows,female_cols]
 print female_rows,female_cols
 print female_val
+
+#row, col = male_hist.shape
+#print row
+#print col
 
 
 #y = np.asfarray(range(height_bins))
@@ -407,6 +510,8 @@ plt.show()
 #for data in data_frame.query('Sex=="Male"') :
 #	print data
 	#male_bin_array[bin_index(data,num_bins,min_height,max_height)]+=1
+
+'''
 
 
 '''
