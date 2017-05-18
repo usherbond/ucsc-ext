@@ -14,8 +14,9 @@ def load_mnist(dataset="training", digits=range(10), path='C:\\Users\\Shashi\\Do
 
     if dataset == "training":
         fname_img = os.path.join(path, 'train-images-idx3-ubyte')
-        #fname_lbl = os.path.join(path, 'train-labels-idx1-ubyte.mod')
-        fname_lbl = os.path.join(path, 'train-labels-idx1-ubyte.small')
+        #fname_lbl = os.path.join(path, 'train-labels-idx1-ubyte')
+        fname_lbl = os.path.join(path, 'train-labels-idx1-ubyte.mod')
+        #fname_lbl = os.path.join(path, 'train-labels-idx1-ubyte.small')
     elif dataset == "testing":
         fname_img = os.path.join(path, 't10k-images.idx')
         fname_lbl = os.path.join(path, 't10k-labels.idx')
@@ -56,8 +57,12 @@ def load_mnist(dataset="training", digits=range(10), path='C:\\Users\\Shashi\\Do
 #import scipy.sparse as sparse
 #import scipy.linalg as linalg
 
+clabel_n = 4
+clabel_p = 7
+
 #images, labels = load_mnist('training', digits=[4,7],path=os.getcwd())
-X, T = load_mnist('training', digits=[4,7],path=os.getcwd())
+#X, T = load_mnist('training', digits=[4,7],path=os.getcwd())
+X, T = load_mnist('training', digits=[clabel_n,clabel_p],path=os.getcwd())
 
 # converting from NX28X28 array into NX784 array
 #flatimages = list()
@@ -122,6 +127,49 @@ P = np.dot(Z,V_t)
 print P
 #print P[:,0]
 #print P[:,1]
+
+print X
+index_n = np.where(T==clabel_n)[0]
+index_p = np.where(T==clabel_p)[0]
+#print X[index_n]
+#print T[index_n]
+#print X[index_p]
+#print T[index_p]
+#exit()
+
+alpha_cloud = 0.1
+plt.subplot(2,2,1)
+plt.plot(X[index_n][:,0],X[index_n][:,1],"ro",alpha=alpha_cloud)
+plt.plot(X[index_p][:,0],X[index_p][:,1],"bo",alpha=alpha_cloud)
+#plt.plot(np.array(X[:,0]),np.array(X[:,1]),"bo",alpha=alpha_cloud)
+plt.plot(X_mean[0],X_mean[1],"ks")
+plt.axis('equal')
+plt.grid()
+
+#f2 = plt.figure(2)
+plt.subplot(2,2,2)
+plt.plot(Z[index_n][:,0],Z[index_n][:,1],"ro",alpha=alpha_cloud)
+plt.plot(Z[index_p][:,0],Z[index_p][:,1],"bo",alpha=alpha_cloud)
+#plt.plot(np.array(Z[:,0]),np.array(Z[:,1]),"bo",alpha=alpha_cloud)
+#plt.plot([0,v_t[0,0]],[0,v_t[1,0]],'k-',linewidth=2.0)
+for i in range(len(W)) :
+	plt.plot([0,np.sqrt(W[i])*V_t[0,i]],[0,np.sqrt(W[i])*V_t[1,i]],'k-',linewidth=2.0)
+	#plt.plot([0,V_t[0,i]],[0,V_t[1,i]],'k-',linewidth=2.0)
+	#plt.plot([0,W[i]*V_t[0,i]],[0,W[i]*V_t[1,i]],'k-',linewidth=2.0)
+plt.axis('equal')
+plt.grid()
+
+#f3 = plt.figure(3)
+plt.subplot(2,2,3)
+plt.plot(P[index_n][:,0],P[index_n][:,1],"ro",alpha=alpha_cloud)
+plt.plot(P[index_p][:,0],P[index_p][:,1],"bo",alpha=alpha_cloud)
+#plt.plot(P[:,0],P[:,1],"bo",alpha=alpha_cloud)
+plt.axis('equal')
+plt.grid()
+
+plt.show()
+
+
 
 
 
