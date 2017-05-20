@@ -1,6 +1,7 @@
 
 import os, struct
 #import matplotlib as plt
+from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 from array import array as pyarray
 #from numpy import append, array, int8, uint8, zeros as np
@@ -38,16 +39,23 @@ def load_mnist(dataset="training", digits=range(10), path='C:\\Users\\Shashi\\Do
 
     #images = np.zeros((N, rows, cols), dtype=np.uint8)
     images = np.zeros((N, rows * cols), dtype=np.uint8)
-    images_small = np.zeros((N, 2), dtype=np.uint8)
+    small_size = 2
+    images_small = np.zeros((N, small_size), dtype=np.uint8)
     labels = np.zeros((N, 1), dtype=np.int8)
     for i in range(len(ind)):
         #images[i] = np.array(img[ ind[i]*rows*cols : (ind[i]+1)*rows*cols ]).reshape((rows, cols))
         images[i] = np.array(img[ ind[i]*rows*cols : (ind[i]+1)*rows*cols ])
         labels[i] = lbl[ind[i]]
 	# mod
-        images_small[i] = np.array([images[i][9*28 +16],images[i][15*28 +9]])
+	if (small_size ==2) :
+		# 2 elements:
+		images_small[i] = np.array([images[i][9*28 +16],images[i][15*28 +9]])
+	else :
+		# 3 elements:
+		images_small[i] = np.array([images[i][9*28 +16],images[i][20*28 +18],images[i][15*28 +9]])
         #images[i][9*28 +16] = 0 # 7 diff
         #images[i][15*28 +9] = 0 # 4 diff
+        #images[i][20*28 +18] = 0 # straigth
 
     #return images, labels
     return images_small, labels
@@ -70,15 +78,17 @@ X, T = load_mnist('training', digits=[clabel_n,clabel_p],path=os.getcwd())
 #    flatimages.append(i.ravel())
 #X = np.asarray(flatimages)
 
+'''
 print("Check shape of matrix", X.shape)
 print("Check Mins and Max Values",np.amin(X),np.amax(X))
 print("\nCheck training vector by plotting image \n")
-'''
 for i in range(len(X)) :
-	#plt.imshow(X[i].reshape(28, 28),interpolation='None', cmap=plt.get_cmap('gray'))
-	plt.imshow(X[i].reshape(1, 2),interpolation='None', cmap=plt.get_cmap('gray'))
-	plt.title(str(T[i])+str(X[i]))
-	plt.title(str(T[i])+str(X[i]))
+	if (len(X[i]) == 28*28) :
+		plt.imshow(X[i].reshape(28, 28),interpolation='None', cmap=plt.get_cmap('gray'))
+		plt.title(str(T[i]))
+	else :
+		plt.imshow(X[i].reshape(1, len(X[i])),interpolation='None', cmap=plt.get_cmap('gray'))
+		plt.title(str(T[i])+str(X[i]))
 	plt.show()
 '''
 
@@ -110,17 +120,29 @@ print V_t
 
 #print type(X)
 # Verify:
-test_v = V_t[:,0]
-#verif = np.round(np.dot(C,test_v)/(W[0]*test_v),3)
-#verif = np.dot(C,test_v)-(W[0]*test_v)
-verif = np.round(np.dot(C,test_v)-(W[0]*test_v),9)
-if (not np.all(verif==0)) :
-	print np.all(verif==1)
-	print "Verification failed:"
-	print verif
-	exit(0)
-else :
-	print "Verification Passed"
+dim = V_t.shape[1]
+for i in range(dim) :
+	test_v = V_t[:,i]
+	#verif = np.round(np.dot(C,test_v)/(W[0]*test_v),3)
+	#verif = np.dot(C,test_v)-(W[0]*test_v)
+	verif = np.round(np.dot(C,test_v)-(W[i]*test_v),8)
+	if (not np.all(verif==0)) :
+		print np.all(verif==1)
+		print "Vector",i,"eigen verification failed:"
+		print verif
+		exit(1)
+	#print "Verification Passed"
+	for j in range(dim) :
+		if (i != j) :
+			test_v2 = V_t[:,j]
+			ort = np.round(np.dot(test_v,test_v2),9)
+			if (ort != 0) :
+				print "Vector",i,"and",j,"are not orthogonal:",ort
+				exit(1)
+
+print "Verification Passed"
+
+del dim 
 
 P = np.dot(Z,V_t)
 #P = np.dot(Z,V_t)
@@ -128,7 +150,8 @@ print P
 #print P[:,0]
 #print P[:,1]
 
-print X
+# This is how we determine which plot to do:
+#print X.shape[1]
 index_n = np.where(T==clabel_n)[0]
 index_p = np.where(T==clabel_p)[0]
 #print X[index_n]
@@ -137,44 +160,76 @@ index_p = np.where(T==clabel_p)[0]
 #print T[index_p]
 #exit()
 
-alpha_cloud = 0.1
-plt.subplot(2,2,1)
-#plt.plot(X[index_n][:,0],X[index_n][:,1],"ro",alpha=alpha_cloud)
-#plt.plot(X[index_p][:,0],X[index_p][:,1],"bo",alpha=alpha_cloud)
-#plt.plot(X[:,0],X[:,1],"bo",alpha=alpha_cloud)
-plt.scatter(X[index_n][:,0],X[index_n][:,1],color='r',marker="o",alpha=alpha_cloud)
-plt.scatter(X[index_p][:,0],X[index_p][:,1],color='b',marker="o",alpha=alpha_cloud)
-plt.plot(X_mean[0],X_mean[1],"ks")
-plt.axis('equal')
-plt.grid()
+graph = True
+if X.shape[1] == 3 and graph :
+	fig = plt.figure()
+	#ax = fig.add_subplot(121, projection='3d')
+	ax = fig.add_subplot(221, projection='3d')
 
-#f2 = plt.figure(2)
-plt.subplot(2,2,2)
-plt.scatter(Z[index_n][:,0],Z[index_n][:,1],color="r",marker="o",alpha=alpha_cloud)
-plt.scatter(Z[index_p][:,0],Z[index_p][:,1],color="b",marker="o",alpha=alpha_cloud)
-#plt.plot(Z[index_n][:,0],Z[index_n][:,1],"ro",alpha=alpha_cloud)
-#plt.plot(Z[index_p][:,0],Z[index_p][:,1],"bo",alpha=alpha_cloud)
-#plt.plot(np.array(Z[:,0]),np.array(Z[:,1]),"bo",alpha=alpha_cloud)
-#plt.plot([0,v_t[0,0]],[0,v_t[1,0]],'k-',linewidth=2.0)
-for i in range(len(W)) :
-	plt.plot([0,np.sqrt(W[i])*V_t[0,i]],[0,np.sqrt(W[i])*V_t[1,i]],'k-',linewidth=2.0)
-	#plt.plot([0,V_t[0,i]],[0,V_t[1,i]],'k-',linewidth=2.0)
-	#plt.plot([0,W[i]*V_t[0,i]],[0,W[i]*V_t[1,i]],'k-',linewidth=2.0)
-plt.axis('equal')
-plt.grid()
+	ax.scatter(X[index_n][:,0], X[index_n][:,1], X[index_n][:,2], color='r', marker='o')
+	ax.scatter(X[index_p][:,0], X[index_p][:,1], X[index_p][:,2], color='b', marker='o')
+	ax.scatter(X_mean[0],X_mean[1],X_mean[2],color='k', marker='s')
+	ax.set_xlabel('7 pixel')
+	ax.set_ylabel('Straight')
+	ax.set_zlabel('4 pixel')
+	ax.axis('equal')
 
-#f3 = plt.figure(3)
-plt.subplot(2,2,3)
-plt.scatter(P[index_n][:,0],P[index_n][:,1],color="r",marker="o",alpha=alpha_cloud)
-plt.scatter(P[index_p][:,0],P[index_p][:,1],color="b",marker="o",alpha=alpha_cloud)
-#plt.plot(P[index_n][:,0],P[index_n][:,1],"ro",alpha=alpha_cloud)
-#plt.plot(P[index_p][:,0],P[index_p][:,1],"bo",alpha=alpha_cloud)
-#plt.plot(P[:,0],P[:,1],"bo",alpha=alpha_cloud)
-plt.axis('equal')
-plt.grid()
+	#ax2 = fig.add_subplot(122, projection='3d')
+	ax2 = fig.add_subplot(222, projection='3d')
+	ax2.scatter(Z[index_n][:,0], Z[index_n][:,1], Z[index_n][:,2], color='r', marker='o')
+	ax2.scatter(Z[index_p][:,0], Z[index_p][:,1], Z[index_p][:,2], color='b', marker='o')
+	for i in range(len(W)) :
+		plt.plot([0,np.sqrt(W[i])*V_t[0,i]],[0,np.sqrt(W[i])*V_t[1,i]],[0,np.sqrt(W[i])*V_t[2,i]],'k-',linewidth=2.0)
+	plt.axis('equal')
 
-plt.show()
+	ax2.set_xlabel('7 pixel')
+	ax2.set_ylabel('Straight')
+	ax2.set_zlabel('4 pixel')
 
+	#ax3 = fig.add_subplot(122, projection='3d')
+	ax3 = fig.add_subplot(223, projection='3d')
+	ax3.scatter(P[index_n][:,0], P[index_n][:,1], P[index_n][:,2], color='r', marker='o')
+	ax3.scatter(P[index_p][:,0], P[index_p][:,1], P[index_p][:,2], color='b', marker='o')
+	plt.axis('equal')
+
+	ax3.set_xlabel('V1')
+	ax3.set_ylabel('V2')
+	ax3.set_zlabel('V3')
+
+	plt.show()
+
+
+if X.shape[1] == 2 and graph :
+	alpha_cloud = 0.1
+	plt.subplot(2,2,1)
+	plt.scatter(X[index_n][:,0],X[index_n][:,1],color='r',marker="o",alpha=alpha_cloud)
+	plt.scatter(X[index_p][:,0],X[index_p][:,1],color='b',marker="o",alpha=alpha_cloud)
+	plt.plot(X_mean[0],X_mean[1],"ks")
+	plt.axis('equal')
+	plt.xlabel('7 Pixel')
+	plt.ylabel('4 Pixel')
+	plt.grid()
+
+	#f2 = plt.figure(2)
+	plt.subplot(2,2,2)
+	plt.scatter(Z[index_n][:,0],Z[index_n][:,1],color="r",marker="o",alpha=alpha_cloud)
+	plt.scatter(Z[index_p][:,0],Z[index_p][:,1],color="b",marker="o",alpha=alpha_cloud)
+	for i in range(len(W)) :
+		plt.plot([0,np.sqrt(W[i])*V_t[0,i]],[0,np.sqrt(W[i])*V_t[1,i]],'k-',linewidth=2.0)
+	plt.axis('equal')
+	plt.grid()
+
+	#f3 = plt.figure(3)
+	plt.subplot(2,2,3)
+	plt.scatter(P[index_n][:,0],P[index_n][:,1],color="r",marker="o",alpha=alpha_cloud)
+	plt.scatter(P[index_p][:,0],P[index_p][:,1],color="b",marker="o",alpha=alpha_cloud)
+	plt.axis('equal')
+	plt.grid()
+
+	plt.show()
+
+'''
+'''
 
 
 
