@@ -61,10 +61,87 @@ def load_mnist(dataset="training", digits=range(10), path='C:\\Users\\Shashi\\Do
     #return images, labels
     return images_small, labels
 
-#from pylab import *
-#from numpy import *
-#import scipy.sparse as sparse
-#import scipy.linalg as linalg
+
+def bin_index(x, nb, xmin, xmax) :
+	"Returns the bin number given the x"
+	return	round(float((nb-1)*(x-xmin))/(xmax-xmin))
+
+def bin_center(n, nb, xmin, xmax) :
+	"Returns the center of the bin range given the bin number"
+	# There is no round to allow this to be numpy array
+	return	n*(xmax-xmin)/float(nb-1) + xmin
+
+def bin_bottom(n, nb, xmin, xmax) :
+	"Returns the center of the bin range given the bin number"
+	# There is no round to allow this to be numpy array
+	return	(2*n-1)*(xmax-xmin)/float(2*(nb-1)) + xmin
+
+def norm_pdf(x, mu, cov) :
+	d = len(mu)
+	#print d
+	xcenter = np.matrix(x-mu)
+	#print xcenter
+	covinv = np.matrix(np.linalg.inv(cov))
+	#print covinv
+	exparg = -0.5 * np.asscalar((xcenter * covinv) * xcenter.transpose())
+	#print exparg
+	det = (np.linalg.det(cov)) 
+	#print math.sqrt(abs(det))
+	#print (math.sqrt(2*math.pi))**d
+	div = ((math.sqrt(2*math.pi))**d) * math.sqrt(abs(det))
+	#print div
+	# det =-9.25185853854e-16 
+	pdf =  ( math.exp(exparg) / div )
+	#print pdf
+	return pdf
+
+def plot_histogram(neg_hist, pos_hist,row_max,row_min,col_max,col_min):
+	print "Building bar graph"
+	row_bins, col_bins = neg_hist.shape
+	print "row_bins", row_bins
+	print "col_bins", col_bins
+
+	row_width = float(row_max-row_min)/(row_bins-1)
+	col_width = float(col_max-col_min)/(col_bins-1)
+	print "row_width",row_width
+	print "col_width",col_width
+
+	m_rows,m_cols = np.nonzero(neg_hist)
+	m_val = neg_hist[m_rows,m_cols]
+	f_rows,f_cols = np.nonzero(pos_hist)
+	f_val = pos_hist[f_rows,f_cols]
+
+	fig = plt.figure()
+	ax1 = fig.add_subplot(111,projection='3d')
+	ax1.bar3d(
+		(bin_bottom(f_rows,row_bins,row_min,row_max)),
+		(bin_bottom(f_cols,col_bins,col_min,col_max)),
+		np.zeros(len(f_val),int),
+		row_width,
+		col_width,
+		f_val,
+		color='b',
+		alpha=0.5)
+
+	ax1.bar3d(
+		(bin_bottom(m_rows,row_bins,row_min,row_max)),
+		(bin_bottom(m_cols,col_bins,col_min,col_max)),
+		np.zeros(len(m_val),int),
+		row_width,
+		col_width,
+		m_val,
+		color='r',
+		alpha=0.5)
+
+	ax1.set_xlabel('Row')
+	ax1.set_ylabel('Col')
+
+	plt.show()
+
+
+
+
+
 
 clabel_n = 4
 clabel_p = 7
@@ -313,12 +390,73 @@ print P_red_cov_n
 print "Covar P vector positive"
 print P_red_cov_p
 
+# Histogram:
 #calculating number of bins:
 #total_min = min(total_p, total_n)
 # Assuming half and half
 #print P_red.shape[0]
 B = int(np.ceil(np.log(P_red.shape[0]/2)/np.log(2))) +1
 print "Number of bins:",B
+
+# first number is number of rows and that will be used for first eigenvector
+hist_n = np.zeros((B,B),int)
+hist_p = np.zeros((B,B),int)
+
+# For translation from previos hw Heigth = 0 and HandSpan = 1
+print "Max:",P_red_max
+print "Min:",P_red_min
+
+#print P_red_n
+for row in P_red_n :
+	#print "Negative training set",row
+	hist_row = bin_index(row[0],B,P_red_min[0],P_red_max[0])
+	hist_col = bin_index(row[1],B,P_red_min[1],P_red_max[1])
+	hist_n[hist_row,hist_col]+=1
+
+#print P_red_p
+for row in P_red_p :
+	#print "Positive training set",row
+	hist_row = bin_index(row[0],B,P_red_min[0],P_red_max[0])
+	hist_col = bin_index(row[1],B,P_red_min[1],P_red_max[1])
+	hist_p[hist_row,hist_col]+=1
+
+print "Negative hist"
+print hist_n
+print "Positive hist"
+print hist_p
+
+'''
+# Scatter for homework:
+plt.figure(1)
+alpha_cloud = 0.1
+plt.scatter(P_red[index_n][:,0],P_red[index_n][:,1],color="r",marker="o",alpha=alpha_cloud)
+plt.scatter(P_red[index_p][:,0],P_red[index_p][:,1],color="b",marker="o",alpha=alpha_cloud)
+plt.axis('equal')
+plt.grid()
+#plt.show()
+plot_histogram(hist_n, hist_p,P_red_max[0],P_red_min[0],P_red_max[1],P_red_min[1])
+'''
+
+'''
+for index, row in male_df.iterrows():
+	#print index, row
+	hist_row = bin_index(row["Height"],height_bins,min_height,max_height)
+	hist_col = bin_index(row["HandSpan"],handspan_bins,min_handspan,max_handspan)
+	#male_hist[hist_row,hist_col] = hist_row*handspan_bins + hist_col + 1
+	male_hist[hist_row,hist_col]+=1
+
+#print male_hist
+
+for index, row in female_df.iterrows():
+	#print index, row
+	hist_row = bin_index(row["Height"],height_bins,min_height,max_height)
+	hist_col = bin_index(row["HandSpan"],handspan_bins,min_handspan,max_handspan)
+	#female_hist[hist_row,hist_col] = hist_row*handspan_bins + hist_col + 2
+	female_hist[hist_row,hist_col]+=1
+
+'''
+
+
 
 
 '''
@@ -394,7 +532,6 @@ for i in range(P_red_cov_n.shape[1]) :
 	for j in range(P_red_cov_n.shape[0]) :
 		worksheet.write(row+j, 1+i, P_red_cov_n[j,i])
 
-
 row +=3
 worksheet.write(row, 0, 'Histogram range, pc1 direction')
 worksheet.write(row, 1, P_red_min[0])
@@ -403,6 +540,80 @@ row +=1
 worksheet.write(row, 0, 'Histogram range, pc2 direction')
 worksheet.write(row, 1, P_red_min[1])
 worksheet.write(row, 2, P_red_max[1])
+
+row +=1
+worksheet.write(row, 0, 'Size of histograms')
+worksheet.write(row, 1, '25 x 25')
+
+row +=1
+worksheet.write(row, 0, 'Hp (class +1 histogram)')
+'''
+hist_p = np.array(
+[[1, 2],
+ [3, 4],
+ [5, 6]]
+)
+print hist_p
+print hist_p.shape
+'''
+for i in range(hist_p.shape[1]) :
+	for j in range(hist_p.shape[0]) :
+		worksheet.write(row+j, 1+i, hist_p[j,i])
+
+
+row +=26
+worksheet.write(row, 0, 'Hn (class -1 histogram)')
+for i in range(hist_n.shape[1]) :
+	for j in range(hist_n.shape[0]) :
+		worksheet.write(row+j, 1+i, hist_n[j,i])
+
+row +=28
+worksheet.write(row, 0, 'xp (class +1 feature vector)')
+row +=1
+worksheet.write(row, 0, 'zp (centered feature vector)')
+row +=1
+worksheet.write(row, 0, 'pp (2 dim representation)')
+row +=1
+worksheet.write(row, 0, 'rp (reconstructed zp)')
+row +=1
+worksheet.write(row, 0, 'xrecp (reconstructed xp)')
+
+row +=2
+worksheet.write(row, 0, 'xn (class -1 feature vector)')
+row +=1
+worksheet.write(row, 0, 'zn (centered feature vector)')
+row +=1
+worksheet.write(row, 0, 'pn (2 dim representation)')
+row +=1
+worksheet.write(row, 0, 'rn (reconstructed zn)')
+row +=1
+worksheet.write(row, 0, 'xrecn (reconstructed xn)')
+
+row +=4
+worksheet.write(row, 0, 'Actual digit represented by xp')
+row +=1
+worksheet.write(row, 0, 'Result of classifying xp using histograms')
+row +=1
+worksheet.write(row, 0, 'Result of classifying xp using Bayesian')
+
+row +=2
+worksheet.write(row, 0, 'Actual digit represented by xn')
+row +=1
+worksheet.write(row, 0, 'Result of classifying xn using histograms')
+row +=1
+worksheet.write(row, 0, 'Result of classifying xn using Bayesian')
+
+row +=3
+worksheet.write(row, 0, 'Training accuracy attained using histograms')
+row +=1
+worksheet.write(row, 0, 'Training accuracy attained using Bayesian')
+
+'''
+worksheet.write(row, 0, 'Hn (class -1 histogram)')
+%s/\(.*\)/worksheet.write(row, 0, '\1')
+worksheet.write(row, 0, '')
+
+'''
 
 
 workbook.close()
