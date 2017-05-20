@@ -141,7 +141,7 @@ def plot_histogram(neg_hist, pos_hist,row_max,row_min,col_max,col_min):
 
 
 
-
+np.random.seed(1)
 
 clabel_n = 4
 clabel_p = 7
@@ -437,26 +437,83 @@ plt.grid()
 plot_histogram(hist_n, hist_p,P_red_max[0],P_red_min[0],P_red_max[1],P_red_min[1])
 '''
 
+# Trying 2 samples of each
+print np.append(X, T,1)
+print index_n
+print index_p
+
+sample_idx_n = np.asscalar(np.random.choice(index_n,1))
+print "Negative sample:",sample_idx_n
+
+#print X_mean
+x_n = X[sample_idx_n]
+z_n = x_n - X_mean
+p_n = np.dot(z_n,V_t)
+p_red_n =p_n[0:2]
+#r_n = np.dot(p_n,V_t.T)
+#print V_t
+#print V_t.T[0:2]
+r_n = np.dot(p_red_n,V_t.T[0:2])
+xrec_n = (r_n + X_mean)
+xrec_pro_n = np.round(np.clip(xrec_n,0,255)).astype(int)
+print "Negative feature vec",x_n
+print "Cent Neg feature vec",z_n
+print "P Neg feature vec",p_n
+print "P red Neg feature vec",p_red_n
+print "Rec Z Neg feature vec",r_n
+print "Rec X Neg feature vec",xrec_n
+print "Rec X Neg feature vec",xrec_pro_n
+
+sample_idx_p = np.asscalar(np.random.choice(index_p,1))
+print "Positive sample:",sample_idx_p
+
+x_p = X[sample_idx_p]
+z_p = x_p - X_mean
+p_p = np.dot(z_p,V_t)
+p_red_p =p_p[0:2]
+r_p = np.dot(p_red_p,V_t.T[0:2])
+xrec_p = (r_p + X_mean)
+xrec_pro_p = np.round(np.clip(xrec_p,0,255)).astype(int)
+#xrec_pro_p = xrec_p
+print "Positive feature vec",x_p
+print "Cent Pos feature vec",z_p
+print "P Pos feature vec",p_p
+print "P red Pos feature vec",p_red_p
+print "Rec Z Pos feature vec",r_p
+print "Rec X Pos feature vec",xrec_p
+print "Rec X Pos feature vec",xrec_pro_p
+
+#print P_red
+
+
 '''
-for index, row in male_df.iterrows():
-	#print index, row
-	hist_row = bin_index(row["Height"],height_bins,min_height,max_height)
-	hist_col = bin_index(row["HandSpan"],handspan_bins,min_handspan,max_handspan)
-	#male_hist[hist_row,hist_col] = hist_row*handspan_bins + hist_col + 1
-	male_hist[hist_row,hist_col]+=1
-
-#print male_hist
-
-for index, row in female_df.iterrows():
-	#print index, row
-	hist_row = bin_index(row["Height"],height_bins,min_height,max_height)
-	hist_col = bin_index(row["HandSpan"],handspan_bins,min_handspan,max_handspan)
-	#female_hist[hist_row,hist_col] = hist_row*handspan_bins + hist_col + 2
-	female_hist[hist_row,hist_col]+=1
-
+# Plot numbers original and recovered
+if (X.shape[1] == 28*28) :
+	img_shape = (28,28)
+else :
+	img_shape = (1, X.shape[1])
+plt.subplot(2,2,1)
+plt.imshow(x_n.reshape(img_shape),interpolation='None', cmap=plt.get_cmap('gray'))
+plt.subplot(2,2,2)
+plt.imshow(xrec_pro_n.reshape(img_shape),interpolation='None', cmap=plt.get_cmap('gray'))
+plt.subplot(2,2,3)
+plt.imshow(x_p.reshape(img_shape),interpolation='None', cmap=plt.get_cmap('gray'))
+plt.subplot(2,2,4)
+plt.imshow(xrec_pro_p.reshape(img_shape),interpolation='None', cmap=plt.get_cmap('gray'))
+plt.show()
 '''
 
+#queries
 
+print p_red_n
+hist_row = bin_index(p_red_n[0],B,P_red_min[0],P_red_max[0])
+hist_col = bin_index(p_red_n[1],B,P_red_min[1],P_red_max[1])
+#print hist_row,hist_col
+sample_n = hist_n[hist_row,hist_col]
+sample_p = hist_p[hist_row,hist_col]
+print sample_n, sample_p
+
+#end of computation
 
 
 '''
@@ -569,28 +626,49 @@ for i in range(hist_n.shape[1]) :
 
 row +=28
 worksheet.write(row, 0, 'xp (class +1 feature vector)')
+for i in range(len(x_p)) :
+	worksheet.write(row, 1+i, x_p[i])
 row +=1
 worksheet.write(row, 0, 'zp (centered feature vector)')
+for i in range(len(z_p)) :
+	worksheet.write(row, 1+i, z_p[i])
 row +=1
 worksheet.write(row, 0, 'pp (2 dim representation)')
+for i in range(len(p_red_p)) :
+	worksheet.write(row, 1+i, p_red_p[i])
 row +=1
 worksheet.write(row, 0, 'rp (reconstructed zp)')
+for i in range(len(r_p)) :
+	worksheet.write(row, 1+i, r_p[i])
 row +=1
 worksheet.write(row, 0, 'xrecp (reconstructed xp)')
+for i in range(len(xrec_pro_p)) :
+	worksheet.write(row, 1+i, xrec_pro_p[i])
 
 row +=2
 worksheet.write(row, 0, 'xn (class -1 feature vector)')
+for i in range(len(x_n)) :
+	worksheet.write(row, 1+i, x_n[i])
 row +=1
 worksheet.write(row, 0, 'zn (centered feature vector)')
+for i in range(len(z_n)) :
+	worksheet.write(row, 1+i, z_n[i])
 row +=1
 worksheet.write(row, 0, 'pn (2 dim representation)')
+for i in range(len(p_red_n)) :
+	worksheet.write(row, 1+i, p_red_n[i])
 row +=1
 worksheet.write(row, 0, 'rn (reconstructed zn)')
+for i in range(len(r_n)) :
+	worksheet.write(row, 1+i, r_n[i])
 row +=1
 worksheet.write(row, 0, 'xrecn (reconstructed xn)')
+for i in range(len(xrec_pro_n)) :
+	worksheet.write(row, 1+i, xrec_pro_n[i])
 
 row +=4
 worksheet.write(row, 0, 'Actual digit represented by xp')
+worksheet.write(row, 1, T[sample_idx_p])
 row +=1
 worksheet.write(row, 0, 'Result of classifying xp using histograms')
 row +=1
@@ -598,6 +676,7 @@ worksheet.write(row, 0, 'Result of classifying xp using Bayesian')
 
 row +=2
 worksheet.write(row, 0, 'Actual digit represented by xn')
+worksheet.write(row, 1, T[sample_idx_n])
 row +=1
 worksheet.write(row, 0, 'Result of classifying xn using histograms')
 row +=1
