@@ -42,6 +42,8 @@ def load_mnist(dataset="training", digits=range(10), path='C:\\Users\\Shashi\\Do
     images = np.zeros((N, rows * cols), dtype=np.uint8)
     small_size = 3
     images_small = np.zeros((N, small_size), dtype=np.uint8)
+    #labels = np.zeros((N, 1), dtype=np.int8)
+    #labels = np.zeros((N, 1), dtype=np.int8)
     labels = np.zeros((N, 1), dtype=np.int8)
     for i in range(len(ind)):
         #images[i] = np.array(img[ ind[i]*rows*cols : (ind[i]+1)*rows*cols ]).reshape((rows, cols))
@@ -61,10 +63,41 @@ def load_mnist(dataset="training", digits=range(10), path='C:\\Users\\Shashi\\Do
     #return images, labels
     return images_small, labels
 
-
 def bin_index(x, nb, xmin, xmax) :
 	"Returns the bin number given the x"
 	return	round(float((nb-1)*(x-xmin))/(xmax-xmin))
+
+def bin_position(query, shape, xmin, xmax) :
+	"Returns a tuple whith the position of the querry in N dim"
+	return tuple(
+	  int(bin_index(query[i],shape[i],xmin[i],xmax[i]))
+	  for i in range(len(shape)) )
+
+def histogram_counts(query, histograms, xmin, xmax) :
+	"Returns the count of items from each histogram, they have to have same shape"
+	coor = bin_position(query, histograms[0].shape,xmin, xmax)
+	cnt = [ h[coor] for h in histograms ]
+	return cnt
+
+def histogram_clasifier(query, histograms, labels, xmin, xmax) :
+	counts = np.array(histogram_counts(query, histograms, xmin, xmax))
+	#print "From clasifier count",counts
+	#counts = np.array([2,0])
+	max_cnt = max(counts)
+	#print max_cnt
+	idxs = np.where(counts==max_cnt)[0]
+	#print idxs
+	#print len(idxs)
+	if (len(idxs) == 1) :
+		winning_label = labels[np.asscalar(idxs)]
+	else :
+		winning_label = "undetermined"
+	if (max_cnt==0) :
+		winning_prob = float('NaN')
+	else :
+		winning_prob = float(counts[idxs[0]])/np.sum(counts)
+	return winning_label, winning_prob
+
 
 def bin_center(n, nb, xmin, xmax) :
 	"Returns the center of the bin range given the bin number"
@@ -518,6 +551,9 @@ print hist_row,hist_col
 #print pos
 #for i in range(len(pos)) :
 #	pos[i] = int(bin_index(p_red_n[i],hist_n.shape[i],P_red_min[i],P_red_max[i]))
+print P_red
+pos_alt = bin_position(p_red_n, hist_n.shape,P_red_min, P_red_max)
+print "Alt",pos_alt
 pos = tuple(
 	int(bin_index(p_red_n[i],hist_n.shape[i],P_red_min[i],P_red_max[i]))
 	for i in range(hist_n.ndim) )
@@ -526,6 +562,63 @@ print pos
 sam_n = hist_n[pos]
 sam_p = hist_p[pos]
 print sam_n, sam_p
+
+count_alt = histogram_counts(p_red_n, (hist_n,hist_p),P_red_min, P_red_max)
+print "Count alt",count_alt
+hist = (hist_n,hist_p)
+#hist = hist_n
+print type(hist)
+counts = [ h[pos] for h in hist ]
+#print hist
+print counts
+
+res = histogram_clasifier(p_red_n, (hist_n,hist_p),(clabel_n,clabel_p),P_red_min, P_red_max)
+print 'sing',res
+
+# Measuring training accuracy:
+TP_hist = 0
+TN_hist = 0
+FP_hist = 0
+FN_hist = 0
+for i,q in enumerate(P_red) :
+	class_output = histogram_clasifier(q, (hist_n,hist_p),(clabel_n,clabel_p),P_red_min, P_red_max)
+	ground_truth = np.asscalar(T[i])
+	if (ground_truth==clabel_n) :
+		if (class_output[0]==clabel_n) :
+			status = "True Negative"
+			TN_hist +=1
+		else :
+			status = "False Positive"
+			FP_hist +=1
+	else :
+		if (class_output[0]==clabel_p) :
+			status = "True Positive"
+			TP_hist +=1
+		else :
+			status = "False Negative"
+			FN_hist +=1
+	print class_output, ground_truth, status
+del class_output
+#print class_output
+#s/\(\w\+\)/print '\1',\1
+print 'TP_hist',TP_hist
+print 'TN_hist',TN_hist
+print 'FP_hist',FP_hist
+print 'FN_hist',FN_hist
+
+total_hist = TP_hist + TN_hist + FP_hist + FN_hist
+accuracy_hist = float(TP_hist + TN_hist)/total_hist
+
+#Verify
+if (X.shape[0] != total_hist) :
+	print("The accuracy test for histogram is not successful")
+	exit(0)
+
+print "Accuracy for histogram",accuracy_hist
+
+#print T
+
+
 
 #end of computation
 
@@ -711,4 +804,10 @@ worksheet.write(row, 0, '')
 
 workbook.close()
 
+'''
+Questions for prof:
+	- In the reconstructed image xrec, should we clip the image if one of the pixels is less than 0 and one is greater than 255. Should we make them integer
+	- Hhich probability do we want? the probability of positive or the probability that won the query?
+
+'''
 
