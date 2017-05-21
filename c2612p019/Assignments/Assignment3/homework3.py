@@ -506,12 +506,26 @@ plt.show()
 #queries
 
 print p_red_n
+print hist_n.shape
+print hist_n.ndim
+print hist_n
+print hist_p
+print B
 hist_row = bin_index(p_red_n[0],B,P_red_min[0],P_red_max[0])
 hist_col = bin_index(p_red_n[1],B,P_red_min[1],P_red_max[1])
-#print hist_row,hist_col
-sample_n = hist_n[hist_row,hist_col]
-sample_p = hist_p[hist_row,hist_col]
-print sample_n, sample_p
+print hist_row,hist_col
+#pos = np.zeros(hist_n.ndim,int)
+#print pos
+#for i in range(len(pos)) :
+#	pos[i] = int(bin_index(p_red_n[i],hist_n.shape[i],P_red_min[i],P_red_max[i]))
+pos = tuple(
+	int(bin_index(p_red_n[i],hist_n.shape[i],P_red_min[i],P_red_max[i]))
+	for i in range(hist_n.ndim) )
+print pos
+
+sam_n = hist_n[pos]
+sam_p = hist_p[pos]
+print sam_n, sam_p
 
 #end of computation
 
