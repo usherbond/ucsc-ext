@@ -594,6 +594,7 @@ res_hist_x_p = histogram_clasifier(p_red_p, (hist_n,hist_p),(clabel_n,clabel_p),
 print 'Result for histogram xp',res_hist_x_p,'supposed to be',T[sample_idx_p]
 
 # Measuring training accuracy:
+print "Measuring Accuracy for histogram"
 TP_hist = 0
 TN_hist = 0
 FP_hist = 0
@@ -633,6 +634,54 @@ if (X.shape[0] != total_hist) :
 	exit(0)
 
 print "Accuracy for histogram",accuracy_hist
+
+# Measuring training accuracy bayes:
+print "Measuring Accuracy for bayes"
+TP_bayes = 0
+TN_bayes = 0
+FP_bayes = 0
+FN_bayes = 0
+for i,q in enumerate(P_red) :
+	#class_output = histogram_clasifier(q, (hist_n,hist_p),(clabel_n,clabel_p),P_red_min, P_red_max)
+
+	class_output = bayes_clasifier(q, (P_red_mean_n,P_red_mean_p), (P_red_cov_n,P_red_cov_p), (total_n,total_p), (clabel_n,clabel_p))
+
+	ground_truth = np.asscalar(T[i])
+	if (ground_truth==clabel_n) :
+		if (class_output[0]==clabel_n) :
+			status = "True Negative"
+			TN_bayes +=1
+		else :
+			status = "False Positive"
+			FP_bayes +=1
+	else :
+		if (class_output[0]==clabel_p) :
+			status = "True Positive"
+			TP_bayes +=1
+		else :
+			status = "False Negative"
+			FN_bayes +=1
+	print class_output, ground_truth, status
+del class_output
+#print class_output
+#s/\(\w\+\)/print '\1',\1
+print 'TP_bayes',TP_bayes
+print 'TN_bayes',TN_bayes
+print 'FP_bayes',FP_bayes
+print 'FN_bayes',FN_bayes
+
+total_bayes = TP_bayes + TN_bayes + FP_bayes + FN_bayes
+accuracy_bayes = float(TP_bayes + TN_bayes)/total_bayes
+
+#Verify
+if (X.shape[0] != total_bayes) :
+	print("The accuracy test for bayes is not successful")
+	exit(0)
+
+print "Accuracy for bayes",accuracy_bayes
+
+
+
 
 #print T
 
@@ -800,6 +849,8 @@ worksheet.write(row, 1, res_hist_x_p[0])
 worksheet.write(row, 2, res_hist_x_p[1])
 row +=1
 worksheet.write(row, 0, 'Result of classifying xp using Bayesian')
+worksheet.write(row, 1, res_bayes_x_p[0])
+worksheet.write(row, 2, res_bayes_x_p[1])
 
 row +=2
 worksheet.write(row, 0, 'Actual digit represented by xn')
@@ -810,12 +861,15 @@ worksheet.write(row, 1, res_hist_x_n[0])
 worksheet.write(row, 2, res_hist_x_n[1])
 row +=1
 worksheet.write(row, 0, 'Result of classifying xn using Bayesian')
+worksheet.write(row, 1, res_bayes_x_n[0])
+worksheet.write(row, 2, res_bayes_x_n[1])
 
 row +=3
 worksheet.write(row, 0, 'Training accuracy attained using histograms')
 worksheet.write(row, 1, accuracy_hist)
 row +=1
 worksheet.write(row, 0, 'Training accuracy attained using Bayesian')
+worksheet.write(row, 1, accuracy_bayes)
 
 '''
 worksheet.write(row, 0, 'Hn (class -1 histogram)')
