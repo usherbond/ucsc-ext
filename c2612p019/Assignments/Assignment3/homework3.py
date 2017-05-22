@@ -7,6 +7,7 @@ from array import array as pyarray
 #from numpy import append, array, int8, uint8, zeros as np
 import numpy as np
 import xlsxwriter
+import math
 
 def load_mnist(dataset="training", digits=range(10), path='C:\\Users\\Shashi\\Downloads\\Contracts\\UCB\\UCB Ext\\Python\\MNIST_data'):
     
@@ -17,8 +18,8 @@ def load_mnist(dataset="training", digits=range(10), path='C:\\Users\\Shashi\\Do
     if dataset == "training":
         fname_img = os.path.join(path, 'train-images-idx3-ubyte')
         #fname_lbl = os.path.join(path, 'train-labels-idx1-ubyte')
-        #fname_lbl = os.path.join(path, 'train-labels-idx1-ubyte.mod')
-        fname_lbl = os.path.join(path, 'train-labels-idx1-ubyte.small')
+        fname_lbl = os.path.join(path, 'train-labels-idx1-ubyte.mod')
+        #fname_lbl = os.path.join(path, 'train-labels-idx1-ubyte.small')
     elif dataset == "testing":
         fname_img = os.path.join(path, 't10k-images.idx')
         fname_lbl = os.path.join(path, 't10k-labels.idx')
@@ -98,6 +99,24 @@ def histogram_clasifier(query, histograms, labels, xmin, xmax) :
 		winning_prob = float(counts[idxs[0]])/np.sum(counts)
 	return winning_label, winning_prob
 
+def bayes_clasifier(query, means, covs, pops, labels) :
+	pseudo_cnts = [pops[i] * norm_pdf(query,means[i],covs[i]) for i in range(len(means))]
+	#print pseudo_cnts
+	total_cnts = np.sum(pseudo_cnts)
+	#print total_cnts
+	probs = [pseudo_cnt/float(total_cnts) for pseudo_cnt in pseudo_cnts]
+	#print probs
+	# this code can't handle the same, signal error
+	if all(cnt == pseudo_cnts[0] for cnt in pseudo_cnts) :
+		print "FATAL: this code is not ready for this case",pseudo_cnts
+		exit(1)
+	max_cnt = max(pseudo_cnts)
+	#print max_cnt
+	idx = pseudo_cnts.index(max_cnt)
+	#print idx
+	winning_label = labels[idx]
+	winning_prob = probs[idx]
+	return winning_label, winning_prob
 
 def bin_center(n, nb, xmin, xmax) :
 	"Returns the center of the bin range given the bin number"
@@ -119,6 +138,7 @@ def norm_pdf(x, mu, cov) :
 	exparg = -0.5 * np.asscalar((xcenter * covinv) * xcenter.transpose())
 	#print exparg
 	det = (np.linalg.det(cov)) 
+	#print abs(det)
 	#print math.sqrt(abs(det))
 	#print (math.sqrt(2*math.pi))**d
 	div = ((math.sqrt(2*math.pi))**d) * math.sqrt(abs(det))
@@ -538,42 +558,41 @@ plt.show()
 
 #queries
 
+print P_red_mean_n
+print P_red_mean_p
+print P_red_cov_n
+print P_red_cov_p
 print p_red_n
-print hist_n.shape
-print hist_n.ndim
-print hist_n
-print hist_p
-print B
-hist_row = bin_index(p_red_n[0],B,P_red_min[0],P_red_max[0])
-hist_col = bin_index(p_red_n[1],B,P_red_min[1],P_red_max[1])
-print hist_row,hist_col
-#pos = np.zeros(hist_n.ndim,int)
-#print pos
-#for i in range(len(pos)) :
-#	pos[i] = int(bin_index(p_red_n[i],hist_n.shape[i],P_red_min[i],P_red_max[i]))
-print P_red
-pos_alt = bin_position(p_red_n, hist_n.shape,P_red_min, P_red_max)
-print "Alt",pos_alt
-pos = tuple(
-	int(bin_index(p_red_n[i],hist_n.shape[i],P_red_min[i],P_red_max[i]))
-	for i in range(hist_n.ndim) )
-print pos
+print p_red_p
 
-sam_n = hist_n[pos]
-sam_p = hist_p[pos]
-print sam_n, sam_p
+p_red_n_pdf_n = norm_pdf(p_red_n,P_red_mean_n,P_red_cov_n)
+p_red_n_pdf_p = norm_pdf(p_red_n,P_red_mean_p,P_red_cov_p)
+print p_red_n_pdf_n
+print p_red_n_pdf_p
 
-count_alt = histogram_counts(p_red_n, (hist_n,hist_p),P_red_min, P_red_max)
-print "Count alt",count_alt
-hist = (hist_n,hist_p)
-#hist = hist_n
-print type(hist)
-counts = [ h[pos] for h in hist ]
-#print hist
-print counts
+p_red_n_pcnt_n = total_n * p_red_n_pdf_n
+p_red_n_pcnt_p = total_p * p_red_n_pdf_p
 
-res = histogram_clasifier(p_red_n, (hist_n,hist_p),(clabel_n,clabel_p),P_red_min, P_red_max)
-print 'sing',res
+print p_red_n_pcnt_n
+print p_red_n_pcnt_p
+
+print "Total samples of N (",clabel_n,"):",total_n
+print "Total samples of P (",clabel_p,"):",total_p
+
+res_bayes_x_n = bayes_clasifier(p_red_n, (P_red_mean_n,P_red_mean_p), (P_red_cov_n,P_red_cov_p), (total_n,total_p), (clabel_n,clabel_p))
+print 'Result for bayes xn',res_bayes_x_n,'supposed to be',T[sample_idx_n]
+
+res_bayes_x_p = bayes_clasifier(p_red_p, (P_red_mean_n,P_red_mean_p), (P_red_cov_n,P_red_cov_p), (total_n,total_p), (clabel_n,clabel_p))
+print 'Result for bayes xp',res_bayes_x_p,'supposed to be',T[sample_idx_p]
+
+exit()
+
+
+
+res_hist_x_n = histogram_clasifier(p_red_n, (hist_n,hist_p),(clabel_n,clabel_p),P_red_min, P_red_max)
+print 'Result for histogram xn',res_hist_x_n,'supposed to be',T[sample_idx_n]
+res_hist_x_p = histogram_clasifier(p_red_p, (hist_n,hist_p),(clabel_n,clabel_p),P_red_min, P_red_max)
+print 'Result for histogram xp',res_hist_x_p,'supposed to be',T[sample_idx_p]
 
 # Measuring training accuracy:
 TP_hist = 0
@@ -631,7 +650,7 @@ row = 0
 workbook = xlsxwriter.Workbook('results.xlsx')
 worksheet = workbook.add_worksheet()
 
-worksheet.set_column('A:A', 30)
+worksheet.set_column('A:A', 35)
 
 worksheet.write(row, 0, 'Roque Alejandro Arcudia Hernandez')
 row +=1
@@ -778,6 +797,8 @@ worksheet.write(row, 0, 'Actual digit represented by xp')
 worksheet.write(row, 1, T[sample_idx_p])
 row +=1
 worksheet.write(row, 0, 'Result of classifying xp using histograms')
+worksheet.write(row, 1, res_hist_x_p[0])
+worksheet.write(row, 2, res_hist_x_p[1])
 row +=1
 worksheet.write(row, 0, 'Result of classifying xp using Bayesian')
 
@@ -786,11 +807,14 @@ worksheet.write(row, 0, 'Actual digit represented by xn')
 worksheet.write(row, 1, T[sample_idx_n])
 row +=1
 worksheet.write(row, 0, 'Result of classifying xn using histograms')
+worksheet.write(row, 1, res_hist_x_n[0])
+worksheet.write(row, 2, res_hist_x_n[1])
 row +=1
 worksheet.write(row, 0, 'Result of classifying xn using Bayesian')
 
 row +=3
 worksheet.write(row, 0, 'Training accuracy attained using histograms')
+worksheet.write(row, 1, accuracy_hist)
 row +=1
 worksheet.write(row, 0, 'Training accuracy attained using Bayesian')
 
@@ -808,6 +832,7 @@ workbook.close()
 Questions for prof:
 	- In the reconstructed image xrec, should we clip the image if one of the pixels is less than 0 and one is greater than 255. Should we make them integer
 	- Hhich probability do we want? the probability of positive or the probability that won the query?
+	-What if we get a singular matrix as covariance
 
 '''
 
