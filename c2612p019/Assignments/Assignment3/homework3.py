@@ -558,6 +558,7 @@ plt.show()
 
 #queries
 
+'''
 print P_red_mean_n
 print P_red_mean_p
 print P_red_cov_n
@@ -578,15 +579,13 @@ print p_red_n_pcnt_p
 
 print "Total samples of N (",clabel_n,"):",total_n
 print "Total samples of P (",clabel_p,"):",total_p
+'''
 
 res_bayes_x_n = bayes_clasifier(p_red_n, (P_red_mean_n,P_red_mean_p), (P_red_cov_n,P_red_cov_p), (total_n,total_p), (clabel_n,clabel_p))
 print 'Result for bayes xn',res_bayes_x_n,'supposed to be',T[sample_idx_n]
 
 res_bayes_x_p = bayes_clasifier(p_red_p, (P_red_mean_n,P_red_mean_p), (P_red_cov_n,P_red_cov_p), (total_n,total_p), (clabel_n,clabel_p))
 print 'Result for bayes xp',res_bayes_x_p,'supposed to be',T[sample_idx_p]
-
-exit()
-
 
 
 res_hist_x_n = histogram_clasifier(p_red_n, (hist_n,hist_p),(clabel_n,clabel_p),P_red_min, P_red_max)
