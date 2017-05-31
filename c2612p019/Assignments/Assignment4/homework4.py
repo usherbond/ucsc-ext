@@ -72,10 +72,15 @@ W_type = np.array(
 '''
 print W_type
 
-#line_type = -1*W_type[:-1]/W_type[-1,0]
-#print  W_type[-1].astype(float)
+
+line_failure = -1*W_failure[:-1]/W_failure[-1,0]
+print "Line failure"
+print line_failure
+
 line_type = -1*W_type[:-1]/W_type[-1].astype(float)
+print "Line type"
 print line_type
+
 
 Xa_max = np.amax(Xa,axis=0)
 Xa_min = np.amin(Xa,axis=0)
@@ -87,31 +92,52 @@ print Xrange
 print Xrange.shape
 Xpoints = Xrange[:,:-1]
 print Xpoints
-Xd = np.dot(Xpoints,line_type)
+Xd_failure = np.dot(Xpoints,line_failure)
+Xd_type = np.dot(Xpoints,line_type)
 print Xrange[:,1]
-print Xd
+print Xd_failure
+print Xd_type
 #
 
+
 # ploting:
-uniq = np.unique(T_type)
-print uniq
-Cset = [X[np.where(T_type==cl)[0]] for cl in uniq]
-print Cset
+uniq_failure = np.unique(T_failure)
+print uniq_failure
+Cset_failure = [X[np.where(T_failure==cl)[0]] for cl in uniq_failure]
+print Cset_failure
+
+uniq_type = np.unique(T_type)
+print uniq_type
+Cset_type = [X[np.where(T_type==cl)[0]] for cl in uniq_type]
+print Cset_type
 
 col = ['r','b','g','y','c','m']
 alpha_cloud = 0.1
-#plt.subplot(2,2,1)
-for i,cl in enumerate(Cset) :
+
+plt.subplot(1,2,1)
+for i,cl in enumerate(Cset_failure) :
+	plt.scatter(cl[:,0],cl[:,1],color=col[i],marker="o",alpha=alpha_cloud)
+#plt.plot([60,61],[22,20],"k")
+plt.plot(Xrange[:,1],Xd_failure,"k")
+plt.axis('equal')
+plt.xlabel('X1')
+plt.ylabel('X2')
+plt.grid()
+#plt.show()
+
+plt.subplot(1,2,2)
+for i,cl in enumerate(Cset_type) :
 	plt.scatter(cl[:,0],cl[:,1],color=col[i],marker="o",alpha=alpha_cloud)
 #plt.plot([60,61],[22,20],"k")
 #plt.plot(Xrange[:,1],Xd,"k")
-for i in uniq :
-	plt.plot(Xrange[:,1],Xd[:,i],col[i])
+for i in uniq_type :
+	plt.plot(Xrange[:,1],Xd_type[:,i],col[i])
 plt.axis('equal')
 plt.xlabel('X1')
 plt.ylabel('X2')
 plt.grid()
 plt.show()
+exit()
 
 print Xrange[:,1]
 print Xd
