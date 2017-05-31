@@ -1,9 +1,9 @@
 import math
 import numpy as np
 import pandas as pd
-from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 from scipy.stats import norm
+import xlsxwriter
 
 def linear_classifier(x_vectors, W) :
 	aug_ones = np.ones((x_vectors.shape[0],1),dtype=float)
@@ -284,49 +284,117 @@ if reduced == True :
 	plt.ylabel('X2')
 	plt.grid()
 	plt.show()
-	exit()
+
+# Writing Excel file:
+row = 0
+
+workbook = xlsxwriter.Workbook('results.xlsx')
+worksheet = workbook.add_worksheet('Classifiers')
+
+#worksheet.set_column('A:A', 35)
+
+row = 3
+worksheet.write(row, 0, 'Binary Classifier')
+worksheet.write(row, 4, '6-Class Classifier')
+row += 1
+
+for i in range(W_failure.shape[0]) :
+	for j in range(W_failure.shape[1]) :
+		#print i,j
+		#print W_failure[i,j]
+		worksheet.write(row+i, j, W_failure[i,j])
+
+for i in range(W_type.shape[0]) :
+	for j in range(W_type.shape[1]) :
+		#print i,j
+		#print W_type[i,j]
+		worksheet.write(row+i, 4+j, W_type[i,j])
+		#print W_type
+
+worksheet = workbook.add_worksheet('To be classified')
+row = 3
+worksheet.write(row, 0, 'Failure')
+
+worksheet.write(row, 1, 'Type')
+
+row +=1
+for i in range(results_failure.shape[0]) :
+	for j in range(results_failure.shape[1]) :
+		worksheet.write(row+i, j, results_failure[i,j])
+#print results_failure
+for i in range(results_type.shape[0]) :
+	for j in range(results_type.shape[1]) :
+		worksheet.write(row+i, 1+j, results_type[i,j])
+#print results_type
+
+worksheet = workbook.add_worksheet('Performance')
+row = 0
+for i in range(conf_failure.shape[0]) :
+	for j in range(conf_failure.shape[1]) :
+		worksheet.write(row+i, j, conf_failure[i,j])
+row += 3
+
+worksheet.write(row, 0, "Accuracy")
+worksheet.write(row, 1, Accuracy_failure)
+row += 1
+
+worksheet.write(row, 0, "Sensitivity")
+worksheet.write(row, 1, Sensitivity_failure)
+row += 1
+
+worksheet.write(row, 0, "Specificity")
+worksheet.write(row, 1, Specificity_failure)
+row += 1
+
+worksheet.write(row, 0, "PPV")
+worksheet.write(row, 1, PPV_failure)
+
+row += 2
+
+for i in range(conf_type.shape[0]) :
+	for j in range(conf_type.shape[1]) :
+		worksheet.write(row+i, j, conf_type[i,j])
+
+row += 7
+print "Max PPV type",max_ppv_type
+print "Max PPV type index",max_ppv_type_idx
+
+print "Min PPV type",min_ppv_type
+print "Min PPV type index",min_ppv_type_idx
+
+worksheet.write(row, 0, "Highest PPV")
+worksheet.write(row, 1, max_ppv_type)
+worksheet.write(row, 2, max_ppv_type_idx)
+
+row+=1
+worksheet.write(row, 0, "Lowest PPV")
+worksheet.write(row, 1, min_ppv_type)
+worksheet.write(row, 2, min_ppv_type_idx)
 
 
+"""
+row =4
+worksheet.write(row, 0, 'mu (mean vector)')
+for i in range(len(X_mean)) :
+	worksheet.write(row, 1+i, X_mean[i])
+
+row +=1
+worksheet.write(row, 0, 'v1 (First eigenvector)')
 '''
-# calculating parameters for plotting :
-line_failure = -1*W_failure[:-1]/W_failure[-1,0]
-#line = np.array([16,1])
-Xa_max = np.amax(Xa,axis=0)
-Xa_min = np.amin(Xa,axis=0)
-print Xa_max
-print Xa_min
-Xrange = np.array([Xa_min,Xa_max])
-print line_failure
-#exit()
-print Xrange
-print Xrange.shape
-Xpoints = Xrange[:,:-1]
-print Xpoints
-Xd = np.dot(Xpoints,line_failure)
-print Xrange[:,1]
-print Xd
-#
-
-# ploting:
-uniq = np.unique(T_failure)
-print uniq
-Cset = [X[np.where(T_failure==cl)[0]] for cl in uniq]
-print Cset
-
-
-col = ['r','b','g','y','c','m']
-alpha_cloud = 0.1
-#plt.subplot(2,2,1)
-for i,cl in enumerate(Cset) :
-	plt.scatter(cl[:,0],cl[:,1],color=col[i],marker="o",alpha=alpha_cloud)
-#plt.plot([60,61],[22,20],"k")
-plt.plot(Xrange[:,1],Xd,"k")
-plt.axis('equal')
-plt.xlabel('X1')
-plt.ylabel('X2')
-plt.grid()
-plt.show()
+V_t = np.array(
+[[1, 2, 3],
+ [4, 5, 6],
+ [7, 8, 9],
+ [10, 11, 12]]
+)
+print V_t
+print V_t.shape
 '''
+for i in range(V_t.shape[0]) :
+	worksheet.write(row, 1+i, V_t[i,0])
+
+"""
+
 
 
 exit()
