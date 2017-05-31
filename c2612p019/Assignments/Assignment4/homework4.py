@@ -133,6 +133,9 @@ results_type = linear_classifier(X_queries, W_type)
 print results_type
 
 # Test accuracy:
+cl_as_failure = linear_classifier(X, W_failure)
+cl_as_type = linear_classifier(X, W_type)
+
 
 # From this point it is plotting related
 line_failure = -1*W_failure[:-1]/W_failure[-1,0]
