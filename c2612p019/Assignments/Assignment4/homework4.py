@@ -127,14 +127,14 @@ print X_queries
 
 #results_failure = linear_classifier(X_queries, W_failure)
 #X_queries = X
-results_failure = linear_classifier(X, W_failure)
+results_failure = linear_classifier(X_queries, W_failure)
 print results_failure
 results_type = linear_classifier(X_queries, W_type)
 print results_type
 
+# Test accuracy:
 
 # From this point it is plotting related
-
 line_failure = -1*W_failure[:-1]/W_failure[-1,0]
 print "Line failure"
 print line_failure
