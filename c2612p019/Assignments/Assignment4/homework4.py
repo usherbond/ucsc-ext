@@ -70,6 +70,7 @@ if reduced == True :
 
 X = df_matrix[:,:-2]
 print X
+exit()
 T_type = df_matrix[:,-1:]
 T_failure = df_matrix[:,-2:-1]
 
