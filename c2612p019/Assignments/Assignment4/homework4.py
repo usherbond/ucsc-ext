@@ -5,6 +5,43 @@ from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 from scipy.stats import norm
 
+def linear_classifier(x_vectors, W) :
+	aug_ones = np.ones((x_vectors.shape[0],1),dtype=float)
+	#print aug_ones
+	#print aug_ones.shape
+	#print type(aug_ones)
+	xa_vectors = np.append(aug_ones,x_vectors,1)
+	#print xa_vectors
+
+	classify_failure = np.dot(xa_vectors, W)
+	#classify_failure[2,0] = 0
+	#print classify_failure
+	results = np.zeros((x_vectors.shape[0],1),dtype=int)
+	#print results
+	#print classify_failure.shape[1]
+	if (classify_failure.shape[1]==1) :
+		for i,cl in enumerate(classify_failure) :
+			#print i, np.asscalar(cl)
+			cl_scal = np.asscalar(cl)
+			if cl_scal == 0 :
+				print "ERROR: 0 value in output class"
+				exit(1)
+			results[i,0] = 1 if cl_scal>0 else -1
+	else :
+		for i,cl in enumerate(classify_failure) :
+			max_val = max(cl)
+			#print i, cl, max_val
+			idxs = np.where(cl == max_val)[0]
+			if (len(idxs) == 1) :
+				#print idxs
+				#print np.asscalar(idxs)
+				results[i,0] = np.asscalar(idxs)
+			else :
+				print "ERROR : several max indexes:",idxs
+				exit(1)
+
+	return results
+
 
 
 #excel_file = 'short.xlsx'
@@ -60,6 +97,7 @@ print Xapinv
 
 # Calculate the w's
 W_failure = np.dot(Xapinv, T_failure)
+print "W failure"
 print W_failure
 
 W_type = np.dot(Xapinv, T_type_kesler)
@@ -70,8 +108,32 @@ W_type = np.array(
  [1, 2, 3, 4]]
 )
 '''
+print "W type"
 print W_type
 
+queries_df = pd.read_excel(excel_file,sheetname='To be classified',skiprows=3)
+print queries_df
+queries_df_matrix = queries_df.as_matrix()
+print queries_df_matrix
+queries_df_sub = queries_df
+queries_df_sub["acc"] = queries_df_sub["x-acc"]+queries_df_sub["y-acc"]+queries_df_sub["z-acc"]
+# this one gives even better results:
+queries_df_matrix_sub = queries_df_sub.as_matrix(["Temperature","acc","Failure","Type"])
+print queries_df_matrix
+print queries_df_matrix_sub
+queries_df_matrix = queries_df_matrix_sub
+X_queries = queries_df_matrix[:,:-2]
+print X_queries
+
+#results_failure = linear_classifier(X_queries, W_failure)
+#X_queries = X
+results_failure = linear_classifier(X, W_failure)
+print results_failure
+results_type = linear_classifier(X_queries, W_type)
+print results_type
+
+
+# From this point it is plotting related
 
 line_failure = -1*W_failure[:-1]/W_failure[-1,0]
 print "Line failure"
@@ -119,6 +181,11 @@ for i,cl in enumerate(Cset_failure) :
 	plt.scatter(cl[:,0],cl[:,1],color=col[i],marker="o",alpha=alpha_cloud)
 #plt.plot([60,61],[22,20],"k")
 plt.plot(Xrange[:,1],Xd_failure,"k")
+for i, x_q in enumerate(X_queries) :
+	#print i, x_q
+	plt.plot(x_q[0],x_q[1],"rs" if results_failure[i] < 0 else "bs")
+#results_failure = linear_classifier(X_queries, W_failure)
+#print results_failure
 plt.axis('equal')
 plt.xlabel('X1')
 plt.ylabel('X2')
@@ -132,6 +199,10 @@ for i,cl in enumerate(Cset_type) :
 #plt.plot(Xrange[:,1],Xd,"k")
 for i in uniq_type :
 	plt.plot(Xrange[:,1],Xd_type[:,i],col[i])
+for i, x_q in enumerate(X_queries) :
+	#print i, x_q
+	#print results_type[i,0]
+	plt.plot(x_q[0],x_q[1],col[results_type[i,0]]+'s')
 plt.axis('equal')
 plt.xlabel('X1')
 plt.ylabel('X2')
@@ -139,8 +210,6 @@ plt.grid()
 plt.show()
 exit()
 
-print Xrange[:,1]
-print Xd
 
 '''
 # calculating parameters for plotting :
