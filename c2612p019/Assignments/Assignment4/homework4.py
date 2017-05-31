@@ -68,11 +68,12 @@ print df_matrix_sub
 if reduced == True :
 	df_matrix = df_matrix_sub
 
+#X = df_matrix[:,:-2].astype(float)
 X = df_matrix[:,:-2]
 print X
-exit()
 T_type = df_matrix[:,-1:]
 T_failure = df_matrix[:,-2:-1]
+#T_failure = df_matrix[:,-2:-1].astype(float)
 
 print "Data set"
 print X
