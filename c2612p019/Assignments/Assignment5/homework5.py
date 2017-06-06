@@ -46,8 +46,8 @@ def stump_algo(Xs,Txs) :
 
 
 
-excel_file = 'short.xlsx'
-#excel_file = 'Assignment_1_Data_and_Template.xlsx'
+#excel_file = 'short.xlsx'
+excel_file = 'Assignment_1_Data_and_Template.xlsx'
 
 
 #data_frame = pd.read_csv('Height.csv')
@@ -108,7 +108,9 @@ print Xapinv
 W = np.dot(Xapinv, T)
 print W
 
-exit()
+boundary = -1*W[0,0]/W[1,0]
+print boundary
+#exit()
 
 # Decent plot:
 #alpha_cloud = 0.01
@@ -117,6 +119,7 @@ alpha_cloud = 0.25
 plt.scatter(X,T,color='k',marker="o",alpha=alpha_cloud)
 #plt.scatter(X[index_p][:,0],X[index_p][:,1],color='b',marker="o",alpha=alpha_cloud)
 plt.plot(tao,0,"kx")
+plt.plot(boundary,0,"ks")
 #plt.axis('equal')
 plt.xlabel('X1')
 plt.ylabel('X2')
