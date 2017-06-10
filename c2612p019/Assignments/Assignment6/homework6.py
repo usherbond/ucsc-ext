@@ -148,6 +148,14 @@ for i, true_cl in enumerate(T_index) :
 	#row_idx = (tcl + 1)/2
 print "Confusion matrix"
 print conf_matrix
+'''
+golden:
+[[1191   19    0    0]
+ [ 126  258    0    0]
+ [   0   65    0    0]
+ [   0   69    0    0]]
+'''
+exit()
 
 conf_total = np.sum(conf_matrix)
 
