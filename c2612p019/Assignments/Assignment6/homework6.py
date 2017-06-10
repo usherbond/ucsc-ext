@@ -42,8 +42,8 @@ def linear_classifier(x_vectors, W) :
 	return results
 
 
-
-np.random.seed(1)
+#seed 5 looks promissing
+np.random.seed(5)
 
 #excel_file = 'short.xlsx'
 excel_file = 'Car_Data.xlsx'
@@ -335,23 +335,18 @@ P = np.dot(Z,V_t)
 print "Eigen adjusted data"
 print P
 
+# Adding the new k mean to the plot
+Pmu = np.dot(mu - X_mean, V_t)
+#print "Transformed", Pmu
+
 P_red = P[:,0:2]
 print "First 2 Eigen adjusted data"
 print P_red
 
+Pmu_red = Pmu[:,0:2]
+
 # This is how we determine which plot to do:
-#index_n = np.where(T==clabel_n)[0]
-#index_p = np.where(T==clabel_p)[0]
-index_n = np.where(T<0)[0]
-index_p = np.where(T>0)[0]
 
-P_red_n = P_red[index_n]
-P_red_p = P_red[index_p]
-
-total_n = len(index_n)
-total_p = len(index_p)
-print total_p
-print total_n
 
 #uniq = np.unique(T)
 uniq = ord_dictionary['Recommendation'][1]
@@ -360,13 +355,6 @@ print uniq
 
 Cset = [P_red[np.where(T==cl)[0]] for cl in uniq]
 print Cset
-
-print "Negative features:"
-print P_red_n
-print "Total samples of N :",total_n
-print "Positive features:"
-print P_red_p
-print "Total samples of P :",total_p
 
 # Range verification:
 '''
@@ -408,6 +396,7 @@ mark = ['_','|','x','o','|','x']
 alpha_cloud = 0.1
 for i,cl in enumerate(Cset) :
 	plt.scatter(cl[:,0],cl[:,1],color=col[i],marker=mark[i],alpha=alpha_cloud)
+plt.scatter(Pmu_red[:,0],Pmu_red[:,1],color="k",marker="s",alpha=1)
 plt.axis('equal')
 plt.grid()
 
