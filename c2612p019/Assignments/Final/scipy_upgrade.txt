@@ -1,0 +1,584 @@
+    1  apt-get install chromium-browser
+    2  sudo apt-get install chromium-browser
+    3  chromium-browser 
+    4  sudo apt-get install imagemagick
+    5  ls
+    6  cd Pictures/
+    7  ls
+    8  ls -laF
+    9  convert  -resize 50%    IMG_20170415_184447729_HDR.jpg ss1.jpg
+   10  convert  -resize 25%    IMG_20170415_184447729_HDR.jpg ss1.jpg
+   11  ls -laF
+   12  convert  -resize 25%     IMG_20170415_184456167_HDR.jpg  ss2.jpg
+   13  convert  -resize 25%     IMG_20170415_184514927_HDR.jpg   ss3.jpg
+   14  ls
+   15  convert  -resize 50%     IMG_20170418_222134671.jpg   customdark.jpg
+   16  convert  -resize 25%     IMG_20170419_072402189.jpg   customd1.jpg
+   17  convert  -resize 25%     IMG_20170419_072443407.jpg   customd2.jpg
+   18  rm customd1.jpg 
+   19  rm customd2.jpg 
+   20  convert  -resize 50%     IMG_20170419_072402189.jpg   customd1.jpg
+   21  convert  -resize 50%     IMG_20170419_072443407.jpg   customd2.jpg
+   22  convert  -resize 25%     IMG_20170419_072443407.jpg   customd2.jpg
+   23  convert  -resize 25%     IMG_20170419_072402189.jpg   customd1.jpg
+   24  python
+   25  cd python/
+   26  ls
+   27  gvim data.py
+   28  python data.py 
+   29  ls
+   30  pwd
+   31  ls
+   32  gvim data.py 
+   33  cat data.csv 
+   34  apt-get install python-pandas
+   35  sudo apt-get install python-pandas
+   36  python
+   37  ls
+   38  pwd
+   39  mkdir Documents/
+   40  ls
+   41  cd ../
+   42  ls
+   43  mkdir python
+   44  cd pyt
+   45  cd pytho
+   46  cd -
+   47  pwd
+   48  ls
+   49  mkdir python
+   50  cd python/
+   51  ls
+   52  cat Untitled\ 2.csv 
+   53  cp Untitled\ 2.csv data.csv
+   54  gvm data.csv 
+   55  gvim data.csv 
+   56  apt-get install vim-gnome
+   57  apt-get install vim-gtk
+   58  sudo apt-get install vim-gtk
+   59  gvim
+   60  gvim data.csv 
+   61  python 
+   62  gvim data.csv 
+   63  python
+   64  ls
+   65  gvim data.csv 
+   66  python
+   67  pwd
+   68  ;s
+   69  ls
+   70  cd python/
+   71  ls
+   72  cd ../
+   73  ls
+   74  mkdir sandbox
+   75  ls
+   76  cd sandbox/
+   77  ls
+   78  pwd
+   79  ls
+   80  pwd
+   81  ls
+   82  git clone https://github.com/roquealex/AIRevolution.git
+   83  sudo apt-get install git
+   84  git clone https://github.com/roquealex/AIRevolution.git
+   85  ls
+   86  cd AIRevolution/
+   87  ls
+   88  pwd
+   89  ls
+   90  git pull
+   91  ls
+   92  mkdir class
+   93  ls
+   94  cd class/
+   95  ls
+   96  cd ../
+   97  ls
+   98  rm- -rf class/
+   99  ls
+  100  mkdir c2612p019
+  101  ls
+  102  rm -rf class/
+  103  ls
+  104  cd c2612p019/
+  105  ls
+  106  mkdir Assignments
+  107  ls
+  108  pwd
+  109  ls
+  110  cd Assignments/
+  111  ls
+  112  mkdir Assignment1
+  113  ls
+  114  cd Assignment1/
+  115  ls
+  116  cp /home/roquealex/Downloads/homework1.py .
+  117  ls
+  118  pwd
+  119  ls
+  120  git add homework1.py 
+  121  ls
+  122  git ci -m "Homework 1" homework1.py
+  123  git commit -m "Homework 1" homework1.py
+  124  git status
+  125  git init 
+  126  git status
+  127  cd ../../../
+  128  ls
+  129  git status 
+  130  git pull
+  131  ls
+  132  git config user.name "someone"
+  133  git config user.email "some@one.com"
+  134  git add c2612p019/Assignments/Assignment1/homework1.py
+  135  git commit -m "hm1" 
+  136  git push origin master
+  137  ls
+  138  cd c2612p019/Assignments/Assignment1/.git/
+  139  ls
+  140  cd ../
+  141  ls
+  142  rm -rf .git/
+  143  ls
+  144  gvim homework1.py 
+  145  git status
+  146  tkdiff homework1.py 
+  147  sudo apt-get install tkdiff
+  148  tkdiff homework1.py 
+  149  ls
+  150  git diff homework1.py
+  151  git diff -t tkdiff  homework1.py
+  152  git difftool -t tkdiff  homework1.py
+  153  history  | grep git
+  154  git config user.name "roquealex"
+  155  ls
+  156  gvim README.md
+  157  ls
+  158  git add README.md 
+  159  ls
+  160  pwd
+  161  git add README.md 
+  162  ls
+  163  gvim homework1.py 
+  164  git add README.md 
+  165  git commit -m "Readme file" README.md 
+  166  history  | grep push
+  167  git push origin master
+  168  history  | grep git
+  169  config user.email "another@email.com"
+  170  git config user.email "another@email.com"
+  171  ls
+  172  gvim README.md 
+  173  ls
+  174  git difftool README.md
+  175  git ci -m "Test 2" README.md
+  176  git commit -m "Test 2" README.md
+  177  ls
+  178  history  | grep push
+  179  git push origin master
+  180  git config user.email "roquealex@github.com"
+  181  ls
+  182  gvim README.md 
+  183  git commit -m "Test 3" README.md
+  184  git push origin master
+  185  gvim README.md 
+  186  git config user.email "roquealex20@hotmail.com"
+  187  git commit -m "Test 4" README.md
+  188  git push origin master
+  189  history  | grep git
+  190  pwd
+  191  ls
+  192  cd ../
+  193  ls
+  194  cd ../
+  195  ls
+  196  cd ../
+  197  ls
+  198  cd ../
+  199  ls
+  200  rm -rf AIRevolution/
+  201  ls
+  202  git clone https://github.com/roquealex/ucsc-ext.git
+  203  ls
+  204  cd ucsc-ext/
+  205  ls
+  206  mkdir -p c2612p019/Assignments/Assignment1
+  207  cd c2612p019/
+  208  ls
+  209  cd Assignments/Assignment1/
+  210  ls
+  211  cp ../../../README.md .
+  212  vim README.md 
+  213  ls
+  214  git commit -m "Homework1 readme" README.md
+  215  ls
+  216  git add README.md 
+  217  git commit -m "Homework1 readme" README.md
+  218  git config user.name "roquealex"
+  219  git config user.email "roquealex20@hotmail.com"
+  220  git commit -m "Homework1 readme" README.md
+  221  ls
+  222  git push origin master
+  223  pwd
+  224  ls
+  225  gvim README.md 
+  226  git commit -m "" README.md 
+  227  git commit -m "space" README.md 
+  228  git commit -m "Homework1 readme" README.md
+  229  git push origin master
+  230  ls
+  231  cd ../
+  232  ls
+  233  mkdir Assignment2
+  234  cd Assignment
+  235  cd Assignment2/
+  236  ls
+  237  cp /home/roquealex/Downloads/Assignment_2_Data_and_Template.xlsx .
+  238  ls
+  239  pwd
+  240  ls
+  241  pwd
+  242  ls
+  243  pwd
+  244  gvim homework2.py
+  245  cp /home/roquealex/Downloads/homework1.py .
+  246  ls
+  247  rm homework2.py 
+  248  mv homework1.py homework2.py
+  249  gvim homework2.py 
+  250  ls
+  251  cp  homework2.py homework1.py 
+  252  ls
+  253  ld
+  254  ls
+  255  python homework2.py 
+  256  ls
+  257  rm homework1.py 
+  258  ls
+  259  git add homework2.py Assignment_2_Data_and_Template.xlsx 
+  260  ls
+  261  git commit -m "First ver" *
+  262  ls
+  263  history  | grep push
+  264  git push origin master
+  265  pwd
+  266  ls
+  267  git pull
+  268  ls
+  269  python verif.py 
+  270  gvim verif.py 
+  271  fg
+  272  grep --color print verif.py 
+  273  python verif.py 
+  274  python homework2.py 
+  275  gvim homework2.py 
+  276  python homework2.py 
+  277  pwd
+  278  ls
+  279  cd ../
+  280  ls
+  281  mkdir Assignment3
+  282  git add Assignment2/
+  283  git add Assignment3/
+  284  git commit -m "As3" Assignment3/
+  285  cd Assignment
+  286  cd Assignment3/
+  287  ls
+  288  pwd
+  289  ls
+  290  gunzip train-images-idx3-ubyte.gz 
+  291  ls
+  292  gvim train-images-idx3-ubyte 
+  293  gunzip train-labels-idx1-ubyte.gz 
+  294  ls
+  295  gvim train-labels-idx1-ubyte 
+  296  sudo umount  /media/psf/NO\ NAME 
+  297  pwd
+  298  ls
+  299  python3
+  300  python
+  301  gvim Read_MNIST.py
+  302  ls
+  303  python3 Read_MNIST.py 
+  304  sudo apt-get install matplotlib
+  305  pushd ../Assignment2/
+  306  ls
+  307  python homework2.py 
+  308  gvim homework2.py 
+  309  python homework2.py 
+  310  python3 Read_MNIST.py 
+  311  gvim homework2.py 
+  312  python3 Read_MNIST.py 
+  313  popd
+  314  ls
+  315  python3 Read_MNIST.py 
+  316  python Read_MNIST.py 
+  317  python3 Read_MNIST.py 
+  318  python3
+  319  python Read_MNIST.py 
+  320  kls
+  321  ls
+  322  python Read_MNIST.py 
+  323  pwd
+  324  python
+  325  python Read_MNIST.py 
+  326  gvim ../Assignment2/homework2.py 
+  327  python Read_MNIST.py 
+  328  gvim ../Assignment2/homework2.py 
+  329  python Read_MNIST.py 
+  330  pwd
+  331  ls
+  332  python Read_MNIST.py 
+  333  pwd
+  334  ls
+  335  git add Read_MNIST.py 
+  336  git ci -m "Example on how to read mnist" Read_MNIST.py
+  337  git commit -m "Example on how to read mnist" Read_MNIST.py
+  338  history  | grep push
+  339  git push origin master
+  340  python Read_MNIST.py 
+  341  quit
+  342  python Read_MNIST.py 
+  343  ls
+  344  gvm train-labels-idx1-ubyte 
+  345  gvim train-labels-idx1-ubyte 
+  346  python Read_MNIST.py 
+  347  gvim train-labels-idx1-ubyte 
+  348  python Read_MNIST.py 
+  349  gvim train-labels-idx1-ubyte 
+  350  ls
+  351  gvim train-images-idx3-ubyte 
+  352  python Read_MNIST.py 
+  353  gvim decoding 5
+  354  gvim 
+  355  python
+  356  fg
+  357  jobs
+  358  kill -9 %1
+  359  ls
+  360  python Read_MNIST.py 
+  361  pwd
+  362  ls
+  363  pwd
+  364  ls
+  365  gvim data.txt
+  366  pwd
+  367  ls
+  368  gvim eig_test.py
+  369  python eig_test.py 
+  370  gvim eig_test.py 
+  371  python eig_test.py 
+  372  pwd
+  373  cp ../Assignment2/verif.py .
+  374  ls
+  375  gvim verif.py 
+  376  git pull 
+  377  rm eig_test.py 
+  378  git pull 
+  379  ls
+  380  python homework3.py 
+  381  vim homework3.py 
+  382  gvim homework3.py 
+  383  python homework3.py 
+  384  gvim homework3.py 
+  385  python homework3.py 
+  386  pwd
+  387  ls
+  388  cd sandbox/
+  389  ls
+  390  cd ucsc-ext/
+  391  ls
+  392  cd c2612p019/Assignments/Assignment3/
+  393  ls
+  394  python homework3.py 
+  395  rm homework3.py 
+  396  gut pull
+  397  git pull
+  398  python homework3.py 
+  399  ls
+  400  touch  homework3.py 
+  401  git status
+  402  git pull
+  403  git revert homework3.py
+  404  git reset homework3.py
+  405  ls
+  406  gvim homework3.py 
+  407  git reset --hard  homework3.py
+  408  git checkout .
+  409  gvim homework3.py 
+  410  git status 
+  411  python homework3.py 
+  412  sudo apt-get install python-xlsxwriter 
+  413  python homework3.py 
+  414  gvim homework3.py 
+  415  python homework3.py 
+  416  pwd
+  417  ls
+  418  cd sandbox/ucsc-ext/c2612p019/Assignments/Assignment
+  419  cd sandbox/ucsc-ext/c2612p019/Assignments/
+  420  ls
+  421  git pull
+  422  ls
+  423  cd Assignment4/
+  424  ls
+  425  cp results.xlsx  results.xlsx.bak
+  426  python homework4.py 
+  427  python homework4.py  | tee out.txt
+  428  gvim homework4.py 
+  429  python homework4.py  | tee out.txt
+  430  gvim out.txt 
+  431  python homework4.py  | tee out.txt
+  432  gvim homework4.py 
+  433  python homework4.py  | tee out.txt
+  434  pwd
+  435  ls
+  436  git revert homework4.py
+  437  git difftool homework4.py
+  438  git checkout master
+  439  ls
+  440  git difftool homework4.py
+  441  git checkout HEAD
+  442  ls
+  443  git difftool homework4.py
+  444  git reset homework4.py
+  445  git difftool homework4.py
+  446  rm homework4.py 
+  447  git checkout homework4.py
+  448  git difftool homework4.py
+  449  gvim homework4.py 
+  450  python homework4.py 
+  451  cd ../
+  452  ls
+  453  pwd
+  454  pushd $HOME
+  455  ls
+  456  cd Downloads/
+  457  ls
+  458  cp XXX49303.jpg.html  img.png
+  459  gvim img.png 
+  460  ls
+  461  gvim verif.py 
+  462  gvim hello.txt
+  463  cd .cache/
+  464  ls
+  465  cd chromium/
+  466  ls
+  467  cd Default/
+  468  ls
+  469  cd ../
+  470  ls
+  471  cd ../
+  472  ls
+  473  pwd
+  474  ls
+  475  cd chromium/
+  476  ls
+  477  cd Default/
+  478  ls
+  479  cd Cache/
+  480  ls
+  481  rm -rf *
+  482  l
+  483  ls
+  484  rm -rf *
+  485  ls
+  486  rm -rf *
+  487  ls
+  488  rm -rf *
+  489  ls
+  490  grep --color 49303 *
+  491  grep --color 49303 index-dir/the-real-index 
+  492  grep --color 49303 grep --color PNG *
+  493  cp 0ebee7ffa1df2b50_0 $HOME/test.png
+  494  gvim 0ebee7ffa1df2b50_0
+  495  gvim 3f5023841342734b_0
+  496  gvim 6d7b13f6338df8e3_0
+  497  gvim 94647a5781d97d7f_0
+  498  cd ../
+  499  ls
+  500  cd Media\ Cache/
+  501  ls
+  502  grep --color PNG *
+  503  gvim 85071ff68115b5ba_s
+  504  git clone https://github.com/teambengio/finalproject.git 
+  505  ls
+  506  cd sandbox/
+  507  ls
+  508  git clone https://github.com/teambengio/finalproject.git
+  509  ls
+  510  cd finalproject/
+  511  ls
+  512  git pull
+  513  ls
+  514  python --version 
+  515  sudo apt-get upgrade
+  516  sudo apt-get update
+  517  sudo apt-get upgrade
+  518  sudo apt-get -y install python2.7 python-pip python-dev
+  519  python
+  520  pip --version
+  521  sudo apt-get -y install ipython ipython-notebook
+  522  ipython
+  523  sudo pip install --upgrade pp
+  524  sudo pip install --upgrade pip
+  525  sudo pip install jupyter
+  526  jupyter notebook
+  527  git pull
+  528  ls
+  529  cd ../
+  530  ls
+  531  cd ucsc-ext/
+  532  ls
+  533  git pull
+  534  ls
+  535  cd c2612p019/Assignments/Assignment
+  536  cd c2612p019/Assignments/
+  537  git pull
+  538  pwd
+  539  ls
+  540  git pull
+  541  cd Assignment6/
+  542  ls
+  543  git pull 
+  544  ls
+  545  gvim homework6.py 
+  546  python homework6.py 
+  547  git pull
+  548  gvim homework6.py 
+  549  python homework6.py 
+  550  git pull
+  551  python homework6.py 
+  552  git pull
+  553  rm homework6.py 
+  554  git pull
+  555  python homework6.py 
+  556  gvim homework6.py 
+  557  python homework6.py 
+  558  python --version
+  559  sudo apt-get install acroread
+  560  pwd
+  561  cd ../../
+  562  ls
+  563  cd ../
+  564  ls
+  565  cd ../
+  566  ls
+  567  cd ../
+  568  cd -
+  569  pwd
+  570  ls
+  571  cd finalproject/
+  572  ls
+  573  git pull
+  574  jupyter nbconvert --to script finalproject.ipynb 
+  575  gvim finalproject.py 
+  576  python finalproject.py 
+  577  python -c "import scipy; print scipy.version.full_version"
+  578  ls
+  579  history 
+  580  python -c "import scipy; print scipy.version.full_version"
+  581  sudo pip  install --upgrade scipy
+  582  python -c "import scipy; print scipy.version.full_version"
+  583  sudo pip  install --upgrade scipy
+  584  history  > scipy_upgrade.txt
