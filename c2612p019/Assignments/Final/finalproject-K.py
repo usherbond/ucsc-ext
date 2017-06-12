@@ -40,7 +40,7 @@ import numpy as np
 import time
 from pylab import *
 import pandas as pd
-from scipy.stats import multivariate_normal
+#from scipy.stats import multivariate_normal
 import sys
 
 
@@ -304,7 +304,8 @@ plt.show()
 
 
 fName = os.path.join(pDir,"samples_of_Z_{}.png".format(rev))
-savefig(fName, bbox_inches='tight')
+#BUG:
+#savefig(fName, bbox_inches='tight')
 plot_random_samples(Z,L,fName=fName)
 
 
@@ -703,6 +704,39 @@ def get_CM(groundTruth,predicted,classList) :
 
 # In[59]:
 
+# Numbers to beat:
+#accuracy for training = 75.7116666667
+#accuracy for testing  = 83.03
+
+def kernel_aug_vector(xa) :
+	'Applies 2nd order kernel to an augmented 1d vector'
+	if xa.ndim != 1 :
+		raise ValueError("Array expected to be 1d")
+	xa_size = xa.size
+	xa_2d = xa.reshape((1,xa_size))
+	prod = np.dot(xa_2d.T,xa_2d)
+	idxs = np.triu_indices(xa_size)
+	return prod[idxs]
+
+def kernel_aug(Xa) :
+	'Applies 2nd order kernel to an augmented set of input vectors'
+	Xak = [kernel_aug_vector(xa) for xa in Xa]
+	Xak = np.array(Xak)
+	return Xak
+
+def augment_and_kernel_vector(x) :
+	'Augments and applies 2nd order kernel to a 1d vector'
+	xa = np.insert(x,0,1)
+	return kernel_aug_vector(xa)
+
+def augment_and_kernel(X) :
+	'Augments and applies 2nd order kernel to set of input vectors'
+	Xak = [augment_and_kernel_vector(x) for x in X]
+	Xak = np.array(Xak)
+	return Xak
+
+
+
 
 def train_and_test(X_train,T_train,X_test,T_test,digits,V,mu,n):
     print "Training Classifier with {} PC".format(n)
@@ -711,16 +745,24 @@ def train_and_test(X_train,T_train,X_test,T_test,digits,V,mu,n):
 
     Tk = map_kesler(T_train,digits)
     
-    Xa = augment(P)
-    Wt = train_linear_classifier(Xa,Tk)
-    T_pred = linear_classify(Xa,Wt)
+
+    Xak = augment_and_kernel(P)
+    Wt = train_linear_classifier(Xak,Tk)
+    T_pred = linear_classify(Xak,Wt)
+    '''
+    if n == 2 :
+	    print P[0:4]
+	    print Xak[0:4]
+	    exit()
+    '''
+
      
     print "Testing  Classifier with {} PC".format(n)
     Z_test = X_test - mu
     P_test = np.dot(Z_test,V[:,:n])
 
-    Xa_test = augment(P_test)
-    T_pred_test = linear_classify(Xa_test,Wt)
+    Xak_test = augment_and_kernel(P_test)
+    T_pred_test = linear_classify(Xak_test,Wt)
     
     return T_pred, T_pred_test
 
