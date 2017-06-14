@@ -40,7 +40,7 @@ import numpy as np
 import time
 from pylab import *
 import pandas as pd
-from scipy.stats import multivariate_normal
+#from scipy.stats import multivariate_normal
 import sys
 from collections import Counter
 
@@ -860,7 +860,8 @@ def apply_classifier(numPC,kesler_switch,model=0):
 # In[58]:
 
 
-modelList = ["linear", "linear_K", "bayes"] 
+#modelList = ["linear", "linear_K", "bayes"] 
+modelList = ["linear", "linear_K"] 
 policyList = ["oneVsAll", "allVsAll"]
 exptList = [("{}_{}".format(modelList[i],policyList[j]),i,j) for j in range(len(policyList)) for i in range(len(modelList))]
 
