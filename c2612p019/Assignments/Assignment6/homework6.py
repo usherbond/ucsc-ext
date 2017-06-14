@@ -45,8 +45,8 @@ def linear_classifier(x_vectors, W) :
 #seed 5 looks promissing
 np.random.seed(5)
 
-#excel_file = 'short.xlsx'
-excel_file = 'Car_Data.xlsx'
+excel_file = 'short.xlsx'
+#excel_file = 'Car_Data.xlsx'
 #excel_file = 'Assignment_4_Data_and_Template.xlsx'
 
 data_frame = pd.read_excel(excel_file,sheetname='Sheet1',skiprows=1)
@@ -88,15 +88,18 @@ print T
 
 T_kesler = np.zeros((T.shape[0],len(ord_dictionary['Recommendation'][1])),dtype=int)
 T_index = np.zeros((T.shape[0],1),dtype=int)
+T_binary = np.zeros((T.shape[0],1),dtype=int)
 
 # Converting to Kesler's form
 for i,rec in enumerate(T):
 	T_kesler[i, ord_dictionary['Recommendation'][1].index(rec)  ] = 2
 	T_index[i, 0] = ord_dictionary['Recommendation'][1].index(rec)
+	T_binary[i,0] = -1 if rec=='unacc' else 1
 	#T_kesler[i,i%4] = 2
-#T_kesler = T_kesler-1
+T_kesler = T_kesler-1
 print T_kesler
 print T_index
+print T_binary
 
 # Generating Xa and its pesudo inverse
 #X0 = np.ones((X.shape[0],1),dtype=float)
@@ -113,6 +116,9 @@ print Xapinv.shape
 
 
 W = np.dot(Xapinv, T_kesler)
+W_binary = np.dot(Xapinv, T_binary)
+
+
 '''
 W_type = np.array(
 [[9,10,11,12],
@@ -123,9 +129,15 @@ W_type = np.array(
 print "W"
 print W
 print W.shape
+print "W binary"
+print W_binary
+print W_binary.shape
 
 classified = linear_classifier(X, W)
 print  np.append(T_index,classified,1)
+
+classified_bin = linear_classifier(X, W_binary)
+print  np.append(T_binary,classified_bin,1)
 
 conf_len = len(ord_dictionary['Recommendation'][1])
 
@@ -148,6 +160,7 @@ for i, true_cl in enumerate(T_index) :
 	#row_idx = (tcl + 1)/2
 print "Confusion matrix"
 print conf_matrix
+exit()
 '''
 golden:
 [[1191   19    0    0]
@@ -155,7 +168,7 @@ golden:
  [   0   65    0    0]
  [   0   69    0    0]]
 '''
-exit()
+#exit()
 
 conf_total = np.sum(conf_matrix)
 
@@ -401,7 +414,7 @@ if (not np.all(P_red_diff<max_range)) :
 col = ['r','b','g','y','c','m']
 mark = ['_','|','x','o','|','x']
 #col = ['r','b']
-alpha_cloud = 0.1
+alpha_cloud = 0.9
 for i,cl in enumerate(Cset) :
 	plt.scatter(cl[:,0],cl[:,1],color=col[i],marker=mark[i],alpha=alpha_cloud)
 plt.scatter(Pmu_red[:,0],Pmu_red[:,1],color="k",marker="s",alpha=1)
