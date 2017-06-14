@@ -45,8 +45,8 @@ def linear_classifier(x_vectors, W) :
 #seed 5 looks promissing
 np.random.seed(5)
 
-excel_file = 'short.xlsx'
-#excel_file = 'Car_Data.xlsx'
+#excel_file = 'short.xlsx'
+excel_file = 'Car_Data.xlsx'
 #excel_file = 'Assignment_4_Data_and_Template.xlsx'
 
 data_frame = pd.read_excel(excel_file,sheetname='Sheet1',skiprows=1)
@@ -160,7 +160,6 @@ for i, true_cl in enumerate(T_index) :
 	#row_idx = (tcl + 1)/2
 print "Confusion matrix"
 print conf_matrix
-exit()
 '''
 golden:
 [[1191   19    0    0]
@@ -168,7 +167,18 @@ golden:
  [   0   65    0    0]
  [   0   69    0    0]]
 '''
-#exit()
+# Confuson binary
+conf_matrix_bin = np.zeros((2,2),dtype=int)
+for i, true_cl in enumerate(T_binary) :
+	tcl = (1-np.asscalar(true_cl))/2
+	cas = (1-np.asscalar(classified_bin[i]))/2
+	#print i, tcl, cas
+	conf_matrix_bin[tcl,cas] += 1
+	#row_idx = (tcl + 1)/2
+print "Confusion matrix binary"
+print conf_matrix_bin
+
+
 
 conf_total = np.sum(conf_matrix)
 
@@ -178,6 +188,9 @@ for i in range(len(PPV)) :
 	PPV[i] = round(conf_matrix[i,i]/float(col_sum),2)
 print "PPV",PPV
 max_ppv= max(PPV)
+#1728
+PPV_bin = conf_matrix_bin[0,0]/float(np.sum(conf_matrix_bin[:,0]))
+print "PPV binary",PPV_bin
 
 accuracy = np.zeros(conf_matrix.shape[0],dtype=float)
 for i in range(len(accuracy)) :
@@ -188,6 +201,9 @@ for i in range(len(accuracy)) :
 	#print conf_total, col_sum, row_sum, TN, TP
 	accuracy[i] = round((TP+TN)/float(conf_total),2)
 print "Accuracy",accuracy
+accuracy_bin = np.trace(conf_matrix_bin)/float(np.sum(conf_matrix_bin))
+print "Accuracy binary",accuracy_bin
+exit()
 
 # K means classification:
 
