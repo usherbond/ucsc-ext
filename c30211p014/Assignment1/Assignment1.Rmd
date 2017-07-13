@@ -100,6 +100,7 @@ nonNACount
 ```
 
 **8. Write an R program to replace the missing values with the mean of the non-missing values.**
+_Note : Reusing NAPos from 6._
 ```{r replace_NA}
 X[NAPos] <- mean(X[!is.na(X)])
 X
