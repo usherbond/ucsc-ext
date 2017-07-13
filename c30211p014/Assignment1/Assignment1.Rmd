@@ -1,36 +1,45 @@
 ---
 title: "Assignment 1"
-author: "Roque Arcudia"
+author: "Roque Arcudia Hernandez"
 date: "July 10, 2017"
 output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, fig.width=4, fig.height=3, fig.align='center')
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+**1. What are the measures of central tendency of data? What is the order of these measures for skewed data?**
 
-## ASSIGNMENT # 1
-1. What are the measures of central tendency of data? What is the order of these measures for skewed data?
+*Mean* : is the sum of all the values in a data set divided by the number of elements in the set. It uses the symbol $\mu$ for a population and $\bar{x}$ for a sample mean. On a data set $X$ of size $N$:
+$$\frac{1}{N}\sum_{i=1}^N X_i$$
 
-*Mean* : is the sum of all the values in a data set divided by the number of elements in the set. It uses the symbol $\mu$ for a population and $\bar{x}$ for a sample mean. On a data set $X$ of size $n$:
-
-$$\frac{1}{n}\sum_{i=1}^n X_i$$
-
-*Median* : Is the middle value of a data set when ordered. If the data set has odd number of elements it is simply the middle element. If the data set has even number of elements then it is the average of the position $\frac{n}{2}$ and $\frac{n}{2}+1$ where $n$ is the number of elements.
+*Median* : Is the middle value of a data set when ordered. If the data set has odd number of elements it is simply the middle element. If the data set has even number of elements then it is the average of values in the positions $\frac{n}{2}$ and $\frac{n}{2}+1$ of the ordered dataset, where $n$ is the number of elements.
 
 *Mode* : Is the most common element in a data set.
 
-On skewed right distributions:
+*Skewed Right* : Also called positive skew, the right tail will be longer.
 
-*Mode < Median < Mean*
+```{r skewed_right, echo=FALSE}
+hist(rbeta(100000,1.5,5),xlab="",ylab="",axes=FALSE,main="")
+```
 
-On skewed left distributions:
+The typical order of the measures of central tendency for skewed right distributions is:
+$$
+Mode < Median < Mean
+$$
+*Skewed left* : Also called negative skew, the left tail will be longer.
 
-*Mean < Median < Mode*
+```{r skewed_left, echo=FALSE}
+hist(rbeta(100000,5,1.5),xlab="",ylab="",axes=FALSE,main="")
+```
 
-2. How can you measure variation of data?
+The typical order of the measures of central tendency for skewed left distributions is:
+$$
+Mean < Median < Mode
+$$
+
+**2. How can you measure variation of data?**
 
 With the following:
 
@@ -40,47 +49,43 @@ With the following:
 
 *Variance* : is a measure of how disperse is the data set with respect to the mean value.
 
-From stattrek.com: variance is the average squared deviation from the population mean, as defined by the following formula:
-
+From [stattrek.com](http://stattrek.com/): variance is the average squared deviation from the population mean, as defined by the following formula:
 $$\sigma^2 = \frac{1}{N}\sum_{i=1}^N (X_i - \mu)^2$$
 
 In case of a sample it gets calculated as:
-
 $$s^2 = \frac{1}{n-1}\sum_{i=1}^n (x_i - \bar{x})^2$$
 
 
 *Standard Deviation* : Is the square root of the variance. For a population:
-
 $$\sigma = \sqrt{\frac{\sum_{i=1}^N (X_i - \mu)^2}{N}}$$
 
 And for a sample:
-
 $$s = \sqrt{\frac{\sum_{i=1}^n (x_i - \bar{x})^2}{n-1}}$$
 
-3. Create a vector of positive odd integers less
-than 100
+**3. Create a vector of positive odd integers less
+than 100**
 ```{r odd_integers}
 odd <- seq(1,99,by=2)
 odd
 ```
-4. Remove the values greater than 60 and less
-than 80
+**4. Remove the values greater than 60 and less
+than 80**
 ```{r no_greater_than_60_and_less_than_80}
 odd <- odd[!( odd>60 & odd<80)]
 odd
 ```
 
-5. Find the five number summary of the
-remaining set of values
+**5. Find the five number summary of the
+remaining set of values**
 ```{r five_num_summary}
 fnum <- fivenum(odd)
 names(fnum)<-c("Min.","1st Qu.","Median", "3rd Qu.","Max.")
 fnum
 ```
 
-6. Consider the following vector of values.
+**6. Consider the following vector of values.
 X <-{8, 14, 9, 15, NA, 8,13, 2,9, NA}
-Write an R program to return the positions of the missing values
+Write an R program to return the positions of the missing values**
 
 ```{r NA_pos}
 X <- c(8, 14, 9, 15, NA, 8,13, 2,9, NA)
@@ -88,25 +93,25 @@ NAPos <- which(is.na(X))
 NAPos
 ```
 
-7. Write an R program to count the number of non-missing values
+**7. Write an R program to count the number of non-missing values**
 ```{r count_non_NA}
 nonNACount <- sum(!is.na(X))
 nonNACount
 ```
 
-8. Write an R program to replace the missing values with the mean of the non-missing values.
+**8. Write an R program to replace the missing values with the mean of the non-missing values.**
 ```{r replace_NA}
 X[NAPos] <- mean(X[!is.na(X)])
 X
 ```
 
-9. Load mtcars data. Write an R program that will rearrange the rows of the data frame so that they are sorted by the value of Horsepower.
+**9. Load mtcars data. Write an R program that will rearrange the rows of the data frame so that they are sorted by the value of Horsepower.**
 ```{r mtcars_order_by_hp}
 mtcarsByHP <- mtcars[order(mtcars$hp),]
 mtcarsByHP
 ```
 
-10. Write an R program to count the number of observations with cylinders greater than 4 and gear greater than 3.
+**10. Write an R program to count the number of observations with cylinders greater than 4 and gear greater than 3.**
 
 ```{r obs_filter}
 cylGt4GearGt3 <- sum( mtcars$cyl>4 & mtcars$gear>3 )
