@@ -9,15 +9,6 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
-
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
-```
 
 ## Including Plots
 
@@ -28,3 +19,62 @@ plot(pressure)
 ```
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+## ASSIGNMENT # 1
+1. What are the measures of central tendency of data? What is the order of these measures for skewed data?
+2. How can you measure variation of data?
+3. Create a vector of positive odd integers less
+than 100
+```{r odd_integers}
+odd <- seq(1,99,by=2)
+odd
+```
+4. Remove the values greater than 60 and less
+than 80
+```{r no_greater_than_60_and_less_than_80}
+odd <- odd[!( odd>60 & odd<80)]
+odd
+```
+
+5. Find the five number summary of the
+remaining set of values
+```{r five_num_summary}
+fnum <- fivenum(odd)
+names(fnum)<-c("Min.","1st Qu.","Median", "3rd Qu.","Max.")
+fnum
+```
+
+6. Consider the following vector of values.
+X <-{8, 14, 9, 15, NA, 8,13, 2,9, NA}
+Write an R program to return the positions of the missing values
+
+```{r NA_pos}
+X <- c(8, 14, 9, 15, NA, 8,13, 2,9, NA)
+NAPos <- which(is.na(X))
+NAPos
+```
+
+7. Write an R program to count the number of non-missing values
+```{r count_non_NA}
+nonNACount <- sum(!is.na(X))
+nonNACount
+```
+
+8. Write an R program to replace the missing values with the mean of the non-missing values.
+```{r replace_NA}
+X[NAPos] <- mean(X[!is.na(X)])
+X
+```
+
+9. Load mtcars data. Write an R program that will rearrange the rows of the data frame so that they are sorted by the value of Horsepower.
+```{r mtcars_order_by_hp}
+mtcarsByHP <- mtcars[order(mtcars$hp),]
+mtcarsByHP
+```
+
+10. Write an R program to count the number of observations with cylinders greater than 4 and gear greater than 3.
+
+```{r obs_filter}
+cylGt4GearGt3 <- sum( mtcars$cyl>4 & mtcars$gear>3 )
+cylGt4GearGt3
+```
