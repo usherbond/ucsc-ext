@@ -9,20 +9,54 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
 
 ## ASSIGNMENT # 1
 1. What are the measures of central tendency of data? What is the order of these measures for skewed data?
+
+*Mean* : is the sum of all the values in a data set divided by the number of elements in the set. It uses the symbol $\mu$ for a population and $\bar{x}$ for a sample mean. On a data set $X$ of size $n$:
+
+$$\frac{1}{n}\sum_{i=1}^n X_i$$
+
+*Median* : Is the middle value of a data set when ordered. If the data set has odd number of elements it is simply the middle element. If the data set has even number of elements then it is the average of the position $\frac{n}{2}$ and $\frac{n}{2}+1$ where $n$ is the number of elements.
+
+*Mode* : Is the most common element in a data set.
+
+On skewed right distributions:
+
+*Mode < Median < Mean*
+
+On skewed left distributions:
+
+*Mean < Median < Mode*
+
 2. How can you measure variation of data?
+
+With the following:
+
+*Range* : Difference between the maximum and minimum value in a distribution.
+
+*Inter Quartile Range* : Difference between the 3rd quartile and the 1st quartile.
+
+*Variance* : is a measure of how disperse is the data set with respect to the mean value.
+
+From stattrek.com: variance is the average squared deviation from the population mean, as defined by the following formula:
+
+$$\sigma^2 = \frac{1}{N}\sum_{i=1}^N (X_i - \mu)^2$$
+
+In case of a sample it gets calculated as:
+
+$$s^2 = \frac{1}{n-1}\sum_{i=1}^n (x_i - \bar{x})^2$$
+
+
+*Standard Deviation* : Is the square root of the variance. For a population:
+
+$$\sigma = \sqrt{\frac{\sum_{i=1}^N (X_i - \mu)^2}{N}}$$
+
+And for a sample:
+
+$$s = \sqrt{\frac{\sum_{i=1}^n (x_i - \bar{x})^2}{n-1}}$$
+
 3. Create a vector of positive odd integers less
 than 100
 ```{r odd_integers}
