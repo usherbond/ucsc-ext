@@ -2,7 +2,9 @@
 title: "Assignment 2"
 author: "Roque Arcudia Hernandez"
 date: "July 15, 2017"
-output: pdf_document
+output:
+  html_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -11,13 +13,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## R Markdown
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
-```
+This is an R Markdown document. Markdown is a simple formatting 
 
 ## Including Plots
 
@@ -28,3 +24,74 @@ plot(pressure)
 ```
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+**1. Create two matrices from the given set of numbers
+X1 = {2,3,7,1,6,2,3,5,1} and x2 = {3,2,9,0,7,8,5,8,2}**
+
+```{r matrix_declaration}
+x1 <- matrix(c(2,3,7,1,6,2,3,5,1),nrow=3)
+x2 <- matrix(c(3,2,9,0,7,8,5,8,2),nrow=3)
+x1
+x2
+```
+
+**2. Find the matrix product.**
+```{r matrix_prod}
+prod <- x1 %*% x2
+prod1 <- x2 %*% x1
+prod
+prod1
+```
+
+**3. Find the inverse of the matrix and prove that it
+is correct.**
+
+Inverse:
+```{r matrix_inv}
+inv <- solve(prod)
+inv
+```
+
+Proof: On an nxn matrix A  multiplication of $AA^{-1} = I_n$
+```{r matrix_inv_proof}
+proof <- prod %*% inv
+proof
+```
+
+There are some non zero numbers outside of the diagonal but they are too small.
+```{r check_for_zero}
+treshold <- 1.0e-15
+test_z <- proof - diag(nrow(proof))
+max_num <- max(abs(test_z))
+if (max_num < treshold) {
+  print("PASS: It is an identity matrix")
+} else {
+  print("FAIL: It is not an identity matrix")
+}
+```
+
+**4. Load the Animals data set from the “MASS”
+package**
+
+
+**5. Find the correlation coefficient of brain and
+body in this data set and comment on the
+relation between them**
+
+**6. Load USArrests data set. Comment on the
+distribution of the variables. Is there any
+relation between UrbanPop and three crimes**
+
+**7. Which states has most and least assault,
+murder, and rape arrests.**
+
+**8. List the states which have assault arrests more
+than median of the country.**
+
+**9. Which states are in the bottom 25% of
+murder**
+
+**10. Which states are in the top 25% of the murder.**
+
+
+
