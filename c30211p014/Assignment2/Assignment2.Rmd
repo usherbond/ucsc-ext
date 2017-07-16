@@ -72,11 +72,19 @@ if (max_num < treshold) {
 
 **4. Load the Animals data set from the “MASS”
 package**
-
+```{r loading_animals}
+library(MASS)
+data(Animals)
+Animals
+```
 
 **5. Find the correlation coefficient of brain and
 body in this data set and comment on the
 relation between them**
+```{r sc}
+no_din <- Animals[Animals$body<9000,]
+plot(no_din)
+```
 
 **6. Load USArrests data set. Comment on the
 distribution of the variables. Is there any
