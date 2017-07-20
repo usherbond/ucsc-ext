@@ -11,20 +11,6 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
-
-This is an R Markdown document. Markdown is a simple formatting 
-
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
-
 **1. Create two matrices from the given set of numbers
 X1 = {2,3,7,1,6,2,3,5,1} and x2 = {3,2,9,0,7,8,5,8,2}**
 
@@ -75,31 +61,108 @@ package**
 ```{r loading_animals}
 library(MASS)
 data(Animals)
-Animals
 ```
 
 **5. Find the correlation coefficient of brain and
 body in this data set and comment on the
 relation between them**
-```{r sc}
+```{r cor_animals}
+animals_cor_body_brain <- cor(Animals$body, Animals$brain)
+animals_cor_body_brain
+```
+
+There is aparently no correlation from the size of body and brain in the original dataset. But if we look at the scater plot of the dataset we can see 3 outlayers:
+
+```{r plot_animals, echo=FALSE}
+plot(Animals)
+```
+
+They happend to be dinosaurs:
+
+```{r dinos, echo=FALSE}
+knitr::kable(Animals[Animals$body>9000,])
+```
+
+Then if we exclude the dinosaurs from the list of animals we can see a strong positive correlation between size of body and brain:
+
+```{r cor_no_din}
 no_din <- Animals[Animals$body<9000,]
-plot(no_din)
+no_din_cor_body_brain <- cor(no_din$body, no_din$brain)
+no_din_cor_body_brain
+
+
 ```
 
 **6. Load USArrests data set. Comment on the
 distribution of the variables. Is there any
 relation between UrbanPop and three crimes**
 
+```{r us_arrests}
+data(USArrests)
+```
+
+The following histograms show the distribution of the 4 variables. 
+
+```{r us_arrests_hist}
+library(psych)
+multi.hist(USArrests)
+```
+
+Murder and rape are positive skewed, assault also has some positive skew but it looks bimodal. These 3 variables are measured in number of arrests per 100,000. Their median is smaller than their mean due to the skewness. Urban population, which is measured in percentage shows closer to a normal distribution and the mean and median are really close.
+
+```{r us_arrests_sum}
+knitr::kable(summary(USArrests))
+```
+
+The correlation coefficients can be seen in the following correlation matrix:
+
+```{r us_arrests_corr}
+knitr::kable(cor(USArrests))
+```
+
+There is almost no correlation between the urban population percentage and the number of arrests for the three crimes. There is only weak to moderate positive correlation between the urban population percentage and the number of Rapes at 0.41.
+
+There is strong correlation between assault and murder arrests. And moderate correlation between murder and rape arrests and between assault and rape arrests. This is how the scatter plot pairs look like:
+
+```{r us_arrests_pairs}
+pairs(USArrests, panel = panel.smooth, main = "USArrests data")
+```
+
 **7. Which states has most and least assault,
 murder, and rape arrests.**
+```{r max_n_min}
+subUSArr <- subset(USArrests,select=c("Assault","Murder","Rape"))
+USArrMax <- sapply(subUSArr,which.max)
+USArrMin <- sapply(subUSArr,which.min)
+subUSArrRown <- rownames(subUSArr)
+subUSArrMat <- rbind(subUSArrRown[USArrMax],subUSArrRown[USArrMin])
+colnames(subUSArrMat) <- colnames(subUSArr)
+rownames(subUSArrMat) <- c("Most","Least")
+knitr::kable(subUSArrMat)
+
+```
 
 **8. List the states which have assault arrests more
 than median of the country.**
 
+```{r arr_more_than_med}
+USArrRown <- rownames(USArrests)
+assMTMed <- USArrRown[USArrests$Assault>median(USArrests$Assault)]
+assMTMed
+```
+
 **9. Which states are in the bottom 25% of
 murder**
+```{r bottom_25_mur}
+bottom_25_mur <- USArrRown[USArrests$Murder<quantile(USArrests$Murder,0.25)]
+bottom_25_mur
+```
 
 **10. Which states are in the top 25% of the murder.**
+```{r top_25_mur}
+top_25_mur <- USArrRown[USArrests$Murder>quantile(USArrests$Murder,0.75)]
+top_25_mur 
+```
 
 
 
