@@ -3,8 +3,8 @@ title: "Assignment 2"
 author: "Roque Arcudia Hernandez"
 date: "July 15, 2017"
 output:
-  html_document: default
   pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -24,9 +24,7 @@ x2
 **2. Find the matrix product.**
 ```{r matrix_prod}
 prod <- x1 %*% x2
-prod1 <- x2 %*% x1
 prod
-prod1
 ```
 
 **3. Find the inverse of the matrix and prove that it
@@ -120,7 +118,7 @@ The correlation coefficients can be seen in the following correlation matrix:
 knitr::kable(cor(USArrests))
 ```
 
-There is almost no correlation between the urban population percentage and the number of arrests for the three crimes. There is only weak to moderate positive correlation between the urban population percentage and the number of Rapes at 0.41.
+There is only weak to moderate positive correlation between the urban population percentage and the number of Rapes at 0.41. There is almost no correlation between the urban population percentage and the number of arrests for the other two crimes. 
 
 There is strong correlation between assault and murder arrests. And moderate correlation between murder and rape arrests and between assault and rape arrests. This is how the scatter plot pairs look like:
 
