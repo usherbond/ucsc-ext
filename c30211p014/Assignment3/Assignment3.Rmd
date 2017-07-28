@@ -3,36 +3,13 @@ title: "Assignment 3"
 author: "Roque Arcudia Hernandez"
 date: "July 21, 2017"
 output:
-  html_document: default
   pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
-
-## R Markdown
-
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
-```
-
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
-
-
-ASSIGNMENT # 3
 
 In this homework, you will do some data analysis using R for the Forest Fire Data described http://archive.ics.uci.edu/ml/machine-learning-databases/forest-fires/forestfires.csv
 
@@ -41,7 +18,6 @@ The dataset is used to find the relationship between the burned area of forest f
 **1. Import the data into R.**
 ```{r import_data}
 forestfires <- read.csv('http://archive.ics.uci.edu/ml/machine-learning-databases/forest-fires/forestfires.csv')
-#knitr::kable(forestfires)
 ```
 
 **a. How many observations are there in the
@@ -70,17 +46,17 @@ sum(forestfires$area>0 & forestfires$rain>0)
 
 **2. Show the columns month, day, area of the all the observations.**
 ```{r month_day_area}
-#knitr::kable(subset(forestfires,select=c('month', 'day', 'area')))
+knitr::kable(subset(forestfires,select=c('month', 'day', 'area')))
 ```
 
 **3. Show the columns month, day, area of the observations with a fire**
 ```{r month_day_area_fire}
-#knitr::kable(subset(forestfires,area>0,select=c('month', 'day', 'area')))
+knitr::kable(subset(forestfires,area>0,select=c('month', 'day', 'area')))
 ```
 
 **4. How large are the five largest fires (i.e., having largest area)**
 ```{r five_largest}
-largest_fires <- head(sort(forestfires$area,T),5)
+largest_fires <- head(sort(forestfires$area,TRUE),5)
 largest_fires
 ```
 
@@ -93,22 +69,18 @@ knitr::kable(subset(forestfires,area %in% largest_fires,select=c('month', 'temp'
 
 before:
 ```{r before}
-knitr::kable(forestfires)
 levels(forestfires$month)
 ```
 
-"apr", "aug", "dec", "feb", "jan", "jul", "jun", 
-"mar", "may", o"nov", "oct", "sep")
-
-
-
-c("jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec")
+Reordering month factor and adding a new column fire:
 
 ```{r transformations}
 forestfires<-transform(forestfires,
   month=factor(month,levels=c("jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"),ordered=TRUE),
   fire=area>0)
+```
+Verification:
+```{r verification}
 levels(forestfires$month)
-forestfires$month
 knitr::kable(forestfires[order(forestfires$month),])
 ```
