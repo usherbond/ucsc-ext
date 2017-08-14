@@ -55,6 +55,44 @@ testDate <- function(testDay) {
   print(all.equal(webDF[(webDF$Time.1 %in% cachedDF$Time.1),],cachedDF))
 }
 
+retList <- function() {
+  return(list(1,2))
+}
+
+mySplitDate <- function(dateQuerry) {
+  if (!is.Date(dateQuerry)) {
+    stop("dateQuery should be a Date")
+  }
+  return(list(year=year(dateQuerry),month=month(dateQuerry),day=day(dateQuerry)))
+}
+
+processDate <- function(dateQuerry) {
+  if (!is.Date(dateQuerry)) {
+    stop("dateQuery should be a Date")
+  }
+  # The following function can't be called in parallel:
+  weatherDF <- getPWSData("IYUCATNT2",dateQuerry)
+  # Processing the DF to obtain different statistics:
+  results <- list(
+    speedQ95 = quantile(weatherDF$WindSpeedMPH,0.95),
+    maxSpeed = max(weatherDF$WindSpeedMPH),
+    avgDir = mean(weatherDF$WindDirectionDegrees),
+    # Following is inacurate but it is just to get a string:
+    medDir = median(weatherDF$WindDirection,na.rm=TRUE)
+  )
+  #return(results$speedQ95)
+  return(results)
+}
+
+processDates <- function(dateQuerry) {
+  if (!is.Date(dateQuerry)) {
+    stop("dateQuery should be a Date")
+  }
+  resultMatrix <- sapply(dateQuerry,processDate)
+  # Transpose seems to work even when we have mixed types
+  return(t(resultMatrix))
+}
+
 #test <- getDetailedWeather("IYUCATNT2", "2017-21-01",station_type='id',opt_all_columns=T)
 #cachedDF <- getPWSData("IYUCATNT2",as.Date("2017-02-28"))
 #webDF <- getPWSData("IYUCATNT2",as.Date("2017-02-28"),T)
@@ -63,7 +101,7 @@ testDate <- function(testDay) {
 #print("Equal row compare")
 #print(all.equal(webDF[(webDF$Time.1 %in% cachedDF$Time.1),],cachedDF))
 
-testDate("2017-04-01")
+#testDate("2017-04-01")
 
 #quantile(webDF$WindSpeedMPH,0.95)
 
