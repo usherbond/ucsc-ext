@@ -1,5 +1,6 @@
 library(lubridate)
 library(weatherData)
+library(zoo)
 
 getPWSData <- function(stationName,dateQuerry,forceWebQuerry=FALSE) {
   if (!is.character(stationName)) {
@@ -24,6 +25,7 @@ getPWSData <- function(stationName,dateQuerry,forceWebQuerry=FALSE) {
   if( file.exists(filePath) && !forceWebQuerry ) {
     print("File exists!")
     cachedDF <- read.csv(filePath,stringsAsFactors=FALSE)
+    cachedDF <- transform(cachedDF,Time=as.POSIXct(Time))
     #print(head(cachedDF))
     return(cachedDF)
   } else {
@@ -43,6 +45,39 @@ getPWSData <- function(stationName,dateQuerry,forceWebQuerry=FALSE) {
     }
     return(weatherDF)
   }
+}
+
+convertPWSData2Zoo <- function(pwsDF) {
+  if (!is.data.frame(pwsDF)) {
+    stop("input pwsDF should be a data.frame")
+  }
+  timeKeeperColName <- "Time"
+  timeIdx <- which(colnames(pwsDF)==timeKeeperColName)
+  # Names of columns to exclude includding the time keeping one
+  excludeCols <- c(timeKeeperColName,"Time.1")
+  #excludeIdx <- which(colnames(pwsDF) %in% excludeCols)
+  #Zoo only seems to work with numbers so removing any character from DF:
+  #excludeCols <- !((colnames(pwsDF) %in% excludeCols)|sapply(pwsDF,is.character))
+  excludeCols <- !(colnames(pwsDF) %in% excludeCols)&(sapply(pwsDF,is.numeric))
+  #print(timeIdx)
+  #print(excludeIdx)
+  myZoo <- zoo(pwsDF[,excludeCols],pwsDF[,timeIdx])
+  if (mode(coredata(myZoo)) != "numeric") {
+    stop("Final zoo matrix is expected to have numeric mode");
+  }
+  #if (mode(time(myZoo)) != "numeric") {
+  #  stop("Final zoo time is expected to have numeric mode");
+  #}
+  importantCols <- c("WindDirectionDegrees","WindSpeedMPH", "WindSpeedGustMPH")
+  if (!all(importantCols %in% colnames(myZoo))) {
+    stop("Not all the important fields are present in the Zoo")
+  }
+#print(res)
+  return(myZoo)
+}
+
+getPWSZoo <- function(...) {
+  return(convertPWSData2Zoo(getPWSData(...)))
 }
 
 testDate <- function(testDay) {
@@ -105,5 +140,6 @@ processDates <- function(dateQuerry) {
 
 #quantile(webDF$WindSpeedMPH,0.95)
 
-
+# This is 
+#http://climate.umn.edu/snow_fence/components/winddirectionanddegreeswithouttable3.htm
 
