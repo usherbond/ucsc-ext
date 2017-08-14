@@ -143,3 +143,9 @@ processDates <- function(dateQuerry) {
 # This is 
 #http://climate.umn.edu/snow_fence/components/winddirectionanddegreeswithouttable3.htm
 
+myZoo<- getPWSZoo("IYUCATNT2",as.Date("2014-12-24"))
+zooTimes <- time(myZoo)
+print(zooTimes[14]-zooTimes[3])
+plot(myZoo$WindSpeedMPH)
+
+
