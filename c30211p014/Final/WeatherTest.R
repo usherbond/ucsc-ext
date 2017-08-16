@@ -35,7 +35,7 @@ getPWSData <- function(stationName,dateQuerry,forceWebQuerry=FALSE) {
     }
     #weatherDF <- data.frame(a=c(1,2,3),b=c(4,5,6))
     weatherDF <- getDetailedWeather(stationName, dateQuerry,station_type='id',opt_all_columns=TRUE)
-    Sys.sleep(1)
+    Sys.sleep(5)
     #print(head(weatherDF))
     # Caching code only executed if the force flag is not set
     if (!forceWebQuerry) {
@@ -143,9 +143,12 @@ processDates <- function(dateQuerry) {
 # This is 
 #http://climate.umn.edu/snow_fence/components/winddirectionanddegreeswithouttable3.htm
 
-myZoo<- getPWSZoo("IYUCATNT2",as.Date("2014-12-24"))
-zooTimes <- time(myZoo)
-print(zooTimes[14]-zooTimes[3])
-plot(myZoo$WindSpeedMPH)
-
+demoZoo <- function() {
+  myZoo<- getPWSZoo("IYUCATNT2",as.Date("2014-12-24"))
+  zooTimes <- time(myZoo)
+  timeDiff <- zooTimes[14]-zooTimes[3]
+  print(timeDiff)
+  print(timeDiff>hours(1))
+  plot(myZoo$WindSpeedMPH)
+}
 

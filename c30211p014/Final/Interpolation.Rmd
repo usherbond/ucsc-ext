@@ -1,0 +1,91 @@
+---
+title: "Interpolation Test"
+author: "Roque Arcudia Hernandez"
+date: "August 14, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+Setting up the date to analyze:
+
+```{r date_setup}
+source('WeatherTest.R')
+# Global var for table display:
+headSize<-10
+  
+myDate <- as.Date("2016-12-31")
+myDate
+```
+
+Doing a query on the weather data for that date as a Zoo (printing as data frame or we don't get the time):
+
+```{r zoo_query}
+myZoo<- getPWSZoo("IYUCATNT2",myDate)
+knitr::kable(head(as.data.frame(myZoo),headSize))
+```
+
+Defining the resampling as a range between the start and end time separated by 5 min. This is close to what the dataset captures.
+
+```{r resampling}
+resample <- seq(start(myZoo),end(myZoo),by="5 mins")
+# These 2 lines resample each 5 mins of the day:
+#myDay <- floor_date(start(myZoo),unit="day")
+#resample <- seq(myDay,by="5 mins", len = (24*60/5))
+resample
+str(start(myZoo))
+```
+
+Creating an empty zoo with the previous resampling sequence that will be used for the merge:
+
+```{r emptyzoo}
+emptyZoo <- zoo(,resample)
+```
+
+Creating a new merged Zoo where elements from the original Zoo are present as well as elements of an empty Zoo created with the resample sequence. The new elementes will have NAs
+
+```{r newsamples}
+mergedZoo <- merge(myZoo,emptyZoo,all=TRUE)
+knitr::kable(head(as.data.frame(mergedZoo),headSize))
+```
+
+Interpolate the NAs with other values:
+
+```{r interpolate}
+mergedZoo <- na.approx(mergedZoo)
+knitr::kable(head(as.data.frame(mergedZoo),headSize))
+```
+
+Merge again with empty Zoo to keep only the times that fit into the 5 min interval in case it is very irregular sampling in the original data set.
+
+```{r remerge}
+mergedZoo <- merge(mergedZoo,emptyZoo,all=FALSE)
+knitr::kable(head(as.data.frame(mergedZoo),headSize))
+```
+
+This is the plot of the original zoo:
+
+```{r plot_original}
+plot(myZoo$WindSpeedMPH,type="b")
+```
+
+Interpolated:
+
+```{r plot_inter}
+plot(mergedZoo$WindSpeedMPH,type="b")
+```
+
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
