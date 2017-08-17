@@ -1,6 +1,8 @@
 library(lubridate)
 library(weatherData)
 library(zoo)
+library(dplyr)
+library(openair)
 
 getPWSData <- function(stationName,dateQuerry,forceWebQuerry=FALSE) {
   if (!is.character(stationName)) {
@@ -38,7 +40,7 @@ getPWSData <- function(stationName,dateQuerry,forceWebQuerry=FALSE) {
     Sys.sleep(5)
     #print(head(weatherDF))
     # Caching code only executed if the force flag is not set
-    if (!forceWebQuerry) {
+    if (!forceWebQuerry && !is.null(weatherDF)) {
       #write.csv(weatherDF,filePath)
       print(sprintf("Writing %d to file %s",nrow(weatherDF),filePath))
       write.csv(weatherDF,filePath,row.names=FALSE)
@@ -142,6 +144,7 @@ processDates <- function(dateQuerry) {
 
 # This is 
 #http://climate.umn.edu/snow_fence/components/winddirectionanddegreeswithouttable3.htm
+#attr(data$dateTime, "tzone") <- "Europe/Paris"
 
 demoZoo <- function() {
   myZoo<- getPWSZoo("IYUCATNT2",as.Date("2014-12-24"))
@@ -152,3 +155,20 @@ demoZoo <- function() {
   plot(myZoo$WindSpeedMPH)
 }
 
+demoWindRose <- function() {
+  #dates <- seq(as.Date("2013/1/1"), as.Date("2013/3/31"), by="days")
+  dates <- seq(as.Date("2013/3/16"), as.Date("2013/12/31"), by="days")
+  badDates <- as.Date(readLines('bad_dates.txt'))
+  #dates <- dates[!(dates %in% badDates)]
+  #dates <- as.Date("2017/6/11") # There is a date with more than 360 deg
+  print(dates)
+  res <- lapply(dates,function(x) {
+    return(getPWSData("IYUCATNT2",x))
+    })
+  cachedDF <- do.call(rbind,res)
+  testData <- subset(cachedDF,select=c("Time","WindDirectionDegrees","WindSpeedMPH"))
+  ren <- rename(testData,date=Time,ws=WindSpeedMPH,wd=WindDirectionDegrees)
+  write.csv(ren, "test.csv")
+  print(str(ren))
+  windRose(ren)
+}
