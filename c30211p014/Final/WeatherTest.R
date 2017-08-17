@@ -157,18 +157,24 @@ demoZoo <- function() {
 
 demoWindRose <- function() {
   #dates <- seq(as.Date("2013/1/1"), as.Date("2013/3/31"), by="days")
-  dates <- seq(as.Date("2013/3/16"), as.Date("2013/12/31"), by="days")
+  dates <- seq(as.Date("2012/1/1"), as.Date("2016/12/31"), by="days")
   badDates <- as.Date(readLines('bad_dates.txt'))
-  #dates <- dates[!(dates %in% badDates)]
+  dates <- dates[!(dates %in% badDates)]
   #dates <- as.Date("2017/6/11") # There is a date with more than 360 deg
   print(dates)
+  # Workaround for march 14 and 15 from 2013 which miss the SolarRadiationWatts_m_2
   res <- lapply(dates,function(x) {
-    return(getPWSData("IYUCATNT2",x))
+    tmpdf <- getPWSData("IYUCATNT2",x)
+    #return(tmpdf)
+    if (is.null(tmpdf)) {return(NULL)}
+    testData <- subset(tmpdf,select=c("Time","WindDirectionDegrees","WindSpeedMPH"))
+    return(testData)
     })
   cachedDF <- do.call(rbind,res)
-  testData <- subset(cachedDF,select=c("Time","WindDirectionDegrees","WindSpeedMPH"))
-  ren <- rename(testData,date=Time,ws=WindSpeedMPH,wd=WindDirectionDegrees)
+  #testData <- subset(cachedDF,select=c("Time","WindDirectionDegrees","WindSpeedMPH"))
+  ren <- rename(cachedDF,date=Time,ws=WindSpeedMPH,wd=WindDirectionDegrees)
   write.csv(ren, "test.csv")
   print(str(ren))
-  windRose(ren)
+  #windRose(ren,cols='heat',type='month',angle=18,paddle=F,ws.int=5,breaks=6,key.footer='mph')
+  calendarPlot(ren,pollutant = 'ws',year=2015,annotate='ws')
 }
