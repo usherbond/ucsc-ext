@@ -3,6 +3,7 @@ library(weatherData)
 library(zoo)
 library(dplyr)
 library(openair)
+library(maptools)
 
 getPWSData <- function(stationName,dateQuerry,forceWebQuerry=FALSE) {
   if (!is.character(stationName)) {
@@ -214,7 +215,7 @@ demoWindRose <- function() {
 #}
 
 loc <- matrix(c(-89.3,21.3),nrow=1)
-df <- getCleanPWSDataRange("IYUCATNT2","2014/01/01","2014/3/31")
+df <- getCleanPWSDataRange("IYUCATNT2","2014/01/01","2014/12/31")
 #dfsum <- df %>% group_by(date=as.Date(Time,tz=attr(Time,"tzone"))) %>%
 #  filter(Time>sunriset(loc, date, direction="sunrise", POSIXct.out=TRUE)[["time"]])
 #%>% summarise(num=n())
@@ -247,7 +248,15 @@ monthSum <- dfsum %>%
 
 library(ggplot2)
 #plt <- ggplot(monthSum) + aes(x=month, fill=gteq15) + geom_bar(position="fill") + scale_y_continuous(labels=percent_format())
-plt <- ggplot(monthSum, aes(x=month, y=gteq15*100, fill = variable)) + geom_bar(stat = 'identity')
+#plt <- ggplot(monthSum, aes(x=month, y=gteq15*100, fill = variable)) + geom_bar(stat = 'identity')
+#plt <- ggplot(monthSum, aes(x=month, y=gteq15)) + geom_bar(fill="yellow",stat='identity',alpha=0.9) 
+#plt <- ggplot(monthSum, aes(x=month)) + geom_bar(y=gteq15,fill="yellow",stat='identity',alpha=0.9) 
+
+plt <- ggplot(NULL, aes(x=month, y=prop)) +
+  geom_bar(data=rename(monthSum,prop=gteq15),fill="yellow",stat='identity', width=0.9) +
+  geom_bar(data=rename(monthSum,prop=gteq20),fill="orange",stat='identity', width=0.7) +
+  geom_bar(data=rename(monthSum,prop=gteq25),fill="red",stat='identity', width=0.5) +
+  coord_flip()
 
 
 #print(df)
