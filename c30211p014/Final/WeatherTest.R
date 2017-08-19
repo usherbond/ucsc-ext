@@ -62,7 +62,7 @@ convertPWSData2Zoo <- function(pwsDF) {
   #excludeCols <- !((colnames(pwsDF) %in% excludeCols)|sapply(pwsDF,is.character))
   excludeCols <- !(colnames(pwsDF) %in% excludeCols)&(sapply(pwsDF,is.numeric))
   #print(timeIdx)
-  #print(excludeIdx)
+  #print(excludeIdx) 
   myZoo <- zoo(pwsDF[,excludeCols],pwsDF[,timeIdx])
   if (mode(coredata(myZoo)) != "numeric") {
     stop("Final zoo matrix is expected to have numeric mode");
@@ -80,6 +80,35 @@ convertPWSData2Zoo <- function(pwsDF) {
 
 getPWSZoo <- function(...) {
   return(convertPWSData2Zoo(getPWSData(...)))
+}
+
+getCleanPWSDataRange <- function(stationName, startDate, endDate) {
+  dates <- seq(as.Date(startDate), as.Date(endDate), by="days")
+  #badDates <- as.Date(readLines('bad_dates.txt'))
+  #dates <- dates[!(dates %in% badDates)]
+
+  dirStr <- sprintf("weatherc/%s",stationName)
+  fileName <- sprintf("%s_bad_dates.txt",stationName)
+  filePath <- paste(dirStr,fileName,sep="/")
+  #print(filePath)
+  if( file.exists(filePath) ) {
+    badDates <- as.Date(readLines(filePath))
+    dates <- dates[!(dates %in% badDates)]
+  }
+  res <- lapply(dates,function(x) {
+    tmpdf <- getPWSData(stationName,x)
+    # FIXME : get the timezone based on station data
+    tmpdf$Time <- force_tz(tmpdf$Time,"America/Mexico_city")
+    if (is.null(tmpdf)) {return(NULL)}
+    testData <- select(tmpdf, Time, WindDirectionDegrees, WindSpeedMPH, WindSpeedGustMPH)
+    # FIXME: Some extra cleaning can be done here
+    # 2016-07-27 has negative on wind gust should be NA
+    return(testData)
+  })
+  #print(dates)
+  finalDF <- do.call(rbind,res)
+  #write.csv(finalDF, "test.csv")
+  return(finalDF)
 }
 
 testDate <- function(testDay) {
@@ -176,5 +205,10 @@ demoWindRose <- function() {
   write.csv(ren, "test.csv")
   print(str(ren))
   #windRose(ren,cols='heat',type='month',angle=18,paddle=F,ws.int=5,breaks=6,key.footer='mph')
-  calendarPlot(ren,pollutant = 'ws',year=2015,annotate='ws')
+  calendarPlot(ren,pollutant = 'ws',year=2015,annotate='wd')
+  # random forest
 }
+
+
+df <- getCleanPWSDataRange("IYUCATNT2","2016/07/25","2016/07/25")
+print(df)
