@@ -107,7 +107,7 @@ getCleanPWSDataRange <- function(stationName, startDate, endDate) {
   })
   #print(dates)
   finalDF <- do.call(rbind,res)
-  #write.csv(finalDF, "test.csv")
+  write.csv(finalDF, "test.csv")
   return(finalDF)
 }
 
@@ -204,11 +204,52 @@ demoWindRose <- function() {
   ren <- rename(cachedDF,date=Time,ws=WindSpeedMPH,wd=WindDirectionDegrees)
   write.csv(ren, "test.csv")
   print(str(ren))
-  #windRose(ren,cols='heat',type='month',angle=18,paddle=F,ws.int=5,breaks=6,key.footer='mph')
-  calendarPlot(ren,pollutant = 'ws',year=2015,annotate='wd')
+  windRose(ren,cols='heat',type='month',angle=18,paddle=F,ws.int=5,breaks=6,key.footer='mph')
+  calendarPlot(ren,pollutant = 'ws',year=2015,annotate='ws')
   # random forest
 }
 
+#gtEqNum <- function(data,threshold){
+#  return(sum(data>=threshold))
+#}
 
-df <- getCleanPWSDataRange("IYUCATNT2","2016/07/25","2016/07/25")
-print(df)
+loc <- matrix(c(-89.3,21.3),nrow=1)
+df <- getCleanPWSDataRange("IYUCATNT2","2014/01/01","2014/3/31")
+#dfsum <- df %>% group_by(date=as.Date(Time,tz=attr(Time,"tzone"))) %>%
+#  filter(Time>sunriset(loc, date, direction="sunrise", POSIXct.out=TRUE)[["time"]])
+#%>% summarise(num=n())
+
+dfsum <- df %>% group_by(date=floor_date(Time,unit="day")) %>%
+  filter(Time>sunriset(loc, date, direction="sunrise", POSIXct.out=TRUE)[["time"]]) %>%
+  filter(Time<sunriset(loc, date, direction="sunset", POSIXct.out=TRUE)[["time"]]) %>%
+  summarise(avgDlWindSpeedMPH=mean(WindSpeedMPH),avgDlWindDirectionDegrees=mean(WindDirectionDegrees),high=max(WindSpeedMPH))
+
+
+#windRose(dfsum,ws="avgDlWindSpeedMPH",wd="avgDlWindDirectionDegrees",cols='heat',angle=10,paddle=FALSE,ws.int=5,breaks=6,key.footer='mph')
+calDF <- dfsum %>%
+  rename(wd=avgDlWindDirectionDegrees) %>%
+  mutate(ws=avgDlWindSpeedMPH)
+# There is some issue with the calendar and the type of object from dplyr
+calendarPlot(calDF,year=2014,pollutant="avgDlWindSpeedMPH",annotate='ws')
+# The whole period of time:
+#windRose(rename(df,date=Time,ws=WindSpeedMPH,wd=WindDirectionDegrees),cols='heat',angle=10,paddle=FALSE,ws.int=5,breaks=6,key.footer='mph')
+
+#sumarizing by month
+monthSum <- dfsum %>%
+  mutate(month=as.factor(months(date))) %>%
+  rename(target=avgDlWindSpeedMPH) %>%
+  group_by(month) %>%
+  summarise(
+    gteq15=(sum(target>=15)/n()),
+    gteq20=(sum(target>=20)/n()),
+    gteq25=(sum(target>=25)/n()),
+    total=n())
+
+library(ggplot2)
+#plt <- ggplot(monthSum) + aes(x=month, fill=gteq15) + geom_bar(position="fill") + scale_y_continuous(labels=percent_format())
+plt <- ggplot(monthSum, aes(x=month, y=gteq15*100, fill = variable)) + geom_bar(stat = 'identity')
+
+
+#print(df)
+write.csv(dfsum, "test2.csv")
+#sunriset(loc, date, direction="sunrise", POSIXct.out=TRUE)$time
