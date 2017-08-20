@@ -4,6 +4,7 @@ library(zoo)
 library(dplyr)
 library(openair)
 library(maptools)
+library(ggplot2)
 
 getPWSData <- function(stationName,dateQuerry,forceWebQuerry=FALSE) {
   if (!is.character(stationName)) {
@@ -210,12 +211,8 @@ demoWindRose <- function() {
   # random forest
 }
 
-#gtEqNum <- function(data,threshold){
-#  return(sum(data>=threshold))
-#}
-
 loc <- matrix(c(-89.3,21.3),nrow=1)
-df <- getCleanPWSDataRange("IYUCATNT2","2014/01/01","2014/12/31")
+df <- getCleanPWSDataRange("IYUCATNT2","2014/01/15","2014/01/15")
 #dfsum <- df %>% group_by(date=as.Date(Time,tz=attr(Time,"tzone"))) %>%
 #  filter(Time>sunriset(loc, date, direction="sunrise", POSIXct.out=TRUE)[["time"]])
 #%>% summarise(num=n())
@@ -231,7 +228,8 @@ calDF <- dfsum %>%
   rename(wd=avgDlWindDirectionDegrees) %>%
   mutate(ws=avgDlWindSpeedMPH)
 # There is some issue with the calendar and the type of object from dplyr
-calendarPlot(calDF,year=2014,pollutant="avgDlWindSpeedMPH",annotate='ws')
+calendarPlot(calDF,year=2014,pollutant="avgDlWindSpeedMPH",annotate='value')
+
 # The whole period of time:
 #windRose(rename(df,date=Time,ws=WindSpeedMPH,wd=WindDirectionDegrees),cols='heat',angle=10,paddle=FALSE,ws.int=5,breaks=6,key.footer='mph')
 
@@ -246,7 +244,7 @@ monthSum <- dfsum %>%
     gteq25=(sum(target>=25)/n()),
     total=n())
 
-library(ggplot2)
+
 #plt <- ggplot(monthSum) + aes(x=month, fill=gteq15) + geom_bar(position="fill") + scale_y_continuous(labels=percent_format())
 #plt <- ggplot(monthSum, aes(x=month, y=gteq15*100, fill = variable)) + geom_bar(stat = 'identity')
 #plt <- ggplot(monthSum, aes(x=month, y=gteq15)) + geom_bar(fill="yellow",stat='identity',alpha=0.9) 
@@ -257,7 +255,7 @@ plt <- ggplot(NULL, aes(x=month, y=prop)) +
   geom_bar(data=rename(monthSum,prop=gteq20),fill="orange",stat='identity', width=0.7) +
   geom_bar(data=rename(monthSum,prop=gteq25),fill="red",stat='identity', width=0.5) +
   coord_flip()
-
+print(plt)
 
 #print(df)
 write.csv(dfsum, "test2.csv")
