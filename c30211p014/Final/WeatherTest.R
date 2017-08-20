@@ -155,6 +155,8 @@ getCleanPWSDataRange <- function(stationName, startDate, endDate) {
 
     # Interpolation using Zoo
     myZoo <- convertPWSData2Zoo(testData)
+    #plot(myZoo$WindSpeedMPH)
+    #abline(h=15)
     resample <- seq(start(myZoo),end(myZoo),by="5 mins")
     #print(resample)
     emptyZoo <- zoo(,resample)
@@ -285,10 +287,20 @@ demoWindRose <- function() {
   # random forest
 }
 
+periodLength <- function(measurements,threshVal,threshLength) {
+  measurements[is.na(measurements)] <- 0
+  rleVec <- rle(measurements>=threshVal)
+  contPeriods <- rleVec$lengths[rleVec$values]
+  perLen <- sum(contPeriods[contPeriods>=threshLength])
+  return(perLen)
+}
+
 loc <- matrix(c(-89.3,21.3),nrow=1)
 #df <- getCleanPWSDataRange("IYUCATNT2","2012/03/10","2016/03/10")
 #df <- getCleanPWSDataRange("IYUCATNT2","2013/04/07","2013/04/07") # DL savings
 df <- getCleanPWSDataRange("IYUCATNT2","2012/01/01","2013/12/31")
+#df <- getCleanPWSDataRange("IYUCATNT2","2016/01/01","2016/01/01")
+
 #dfsum <- df %>% group_by(date=as.Date(Time,tz=attr(Time,"tzone"))) %>%
 #  filter(Time>sunriset(loc, date, direction="sunrise", POSIXct.out=TRUE)[["time"]])
 #%>% summarise(num=n())
@@ -298,13 +310,24 @@ df <- getCleanPWSDataRange("IYUCATNT2","2012/01/01","2013/12/31")
 #  filter(Time>sunriset(loc, date, direction="sunrise", POSIXct.out=TRUE)[["time"]]) %>%
 #  filter(Time<sunriset(loc, date, direction="sunset", POSIXct.out=TRUE)[["time"]])
 #write.csv(tmp,"test3.csv")
-  
+
+thresholdPeriod <- dhours(1.5)
+timeIntervals <- dminutes(5)
+thresholdNum <- thresholdPeriod/timeIntervals
+
 dfsum <- df %>% group_by(date=floor_date(Time,unit="day")) %>%
   filter(Time>sunriset(loc, date, direction="sunrise", POSIXct.out=TRUE)[["time"]]) %>%
   filter(Time<sunriset(loc, date, direction="sunset", POSIXct.out=TRUE)[["time"]]) %>%
   summarise(
     avgDlWindSpeedMPH=mean(WindSpeedMPH,na.rm=TRUE),
     avgDlWindDirectionDegrees=mean(WindDirectionDegrees,na.rm=TRUE),
+    periodLength15=periodLength(WindSpeedMPH,15,thresholdNum),
+    periodLength20=periodLength(WindSpeedMPH,20,thresholdNum),
+    periodLength25=periodLength(WindSpeedMPH,25,thresholdNum),
+    pseudoWindSpeed=ifelse(periodLength25>0,25,
+                           ifelse(periodLength20>0,20,
+                                  ifelse(periodLength15>0,15,
+                                         0))),
     high=max(WindSpeedMPH,na.rm=TRUE)
     )
 
@@ -314,7 +337,7 @@ calDF <- dfsum %>%
   rename(wd=avgDlWindDirectionDegrees) %>%
   mutate(ws=avgDlWindSpeedMPH)
 # There is some issue with the calendar and the type of object from dplyr
-calendarPlot(calDF,pollutant="avgDlWindSpeedMPH",annotate='value')
+#calendarPlot(calDF,pollutant="avgDlWindSpeedMPH",annotate='value')
 
 # The whole period of time:
 #windRose(rename(df,date=Time,ws=WindSpeedMPH,wd=WindDirectionDegrees),cols='heat',angle=10,paddle=FALSE,ws.int=5,breaks=6,key.footer='mph')
@@ -322,7 +345,8 @@ calendarPlot(calDF,pollutant="avgDlWindSpeedMPH",annotate='value')
 #sumarizing by month
 monthSum <- dfsum %>%
   mutate(month=as.factor(months(date))) %>%
-  rename(target=avgDlWindSpeedMPH) %>%
+#  rename(target=avgDlWindSpeedMPH) %>%
+  rename(target=pseudoWindSpeed) %>%
   group_by(month) %>%
   summarise(
     gteq15=(sum(target>=15,na.rm=TRUE)/n()),
