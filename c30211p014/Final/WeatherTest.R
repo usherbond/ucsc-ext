@@ -298,10 +298,12 @@ periodLength <- function(measurements,threshVal,threshLength) {
 loc <- matrix(c(-89.3,21.3),nrow=1)
 #df <- getCleanPWSDataRange("IYUCATNT2","2012/03/10","2016/03/10")
 #df <- getCleanPWSDataRange("IYUCATNT2","2013/04/07","2013/04/07") # DL savings
-df <- getCleanPWSDataRange("IYUCATNT2","2012/01/01","2013/12/31")
+#df <- getCleanPWSDataRange("IYUCATNT2","2012/01/01","2013/12/31")
 #df <- getCleanPWSDataRange("IYUCATNT2","2016/01/01","2016/01/01")
+#df <- getCleanPWSDataRange("IYUCATNT2","2012/01/01","2012/01/02") # 2 high winds
+df <- getCleanPWSDataRange("IYUCATNT2","2012/01/01","2016/12/31") #Whole
 
-#dfsum <- df %>% group_by(date=as.Date(Time,tz=attr(Time,"tzone"))) %>%
+#daySum <- df %>% group_by(date=as.Date(Time,tz=attr(Time,"tzone"))) %>%
 #  filter(Time>sunriset(loc, date, direction="sunrise", POSIXct.out=TRUE)[["time"]])
 #%>% summarise(num=n())
 
@@ -315,9 +317,13 @@ thresholdPeriod <- dhours(1.5)
 timeIntervals <- dminutes(5)
 thresholdNum <- thresholdPeriod/timeIntervals
 
-dfsum <- df %>% group_by(date=floor_date(Time,unit="day")) %>%
+# Group by day, extract only daylight readings:
+dayLightGroup <- df %>% group_by(date=floor_date(Time,unit="day")) %>%
   filter(Time>sunriset(loc, date, direction="sunrise", POSIXct.out=TRUE)[["time"]]) %>%
-  filter(Time<sunriset(loc, date, direction="sunset", POSIXct.out=TRUE)[["time"]]) %>%
+  filter(Time<sunriset(loc, date, direction="sunset", POSIXct.out=TRUE)[["time"]])
+
+# summary by day with no filters
+daySum <- dayLightGroup  %>%
   summarise(
     avgDlWindSpeedMPH=mean(WindSpeedMPH,na.rm=TRUE),
     avgDlWindDirectionDegrees=mean(WindDirectionDegrees,na.rm=TRUE),
@@ -332,18 +338,19 @@ dfsum <- df %>% group_by(date=floor_date(Time,unit="day")) %>%
     )
 
 
-#windRose(dfsum,ws="avgDlWindSpeedMPH",wd="avgDlWindDirectionDegrees",cols='heat',angle=10,paddle=FALSE,ws.int=5,breaks=6,key.footer='mph')
-calDF <- dfsum %>%
+#windRose(daySum,ws="avgDlWindSpeedMPH",wd="avgDlWindDirectionDegrees",cols='heat',angle=10,paddle=FALSE,ws.int=5,breaks=6,key.footer='mph')
+calDF <- daySum %>%
   rename(wd=avgDlWindDirectionDegrees) %>%
   mutate(ws=avgDlWindSpeedMPH)
 # There is some issue with the calendar and the type of object from dplyr
+#calendarPlot(calDF,pollutant="avgDlWindSpeedMPH",annotate='value')
 #calendarPlot(calDF,pollutant="avgDlWindSpeedMPH",annotate='value')
 
 # The whole period of time:
 #windRose(rename(df,date=Time,ws=WindSpeedMPH,wd=WindDirectionDegrees),cols='heat',angle=10,paddle=FALSE,ws.int=5,breaks=6,key.footer='mph')
 
 #sumarizing by month
-monthSum <- dfsum %>%
+monthSum <- daySum %>%
   mutate(month=as.factor(months(date))) %>%
 #  rename(target=avgDlWindSpeedMPH) %>%
   rename(target=pseudoWindSpeed) %>%
@@ -368,5 +375,5 @@ plt <- ggplot(NULL, aes(x=month, y=prop)) +
 print(plt)
 
 #print(df)
-write.csv(dfsum, "test2.csv")
+write.csv(daySum, "test2.csv")
 #sunriset(loc, date, direction="sunrise", POSIXct.out=TRUE)$time
