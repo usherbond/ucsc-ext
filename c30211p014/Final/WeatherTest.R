@@ -110,6 +110,9 @@ exploreRawData <- function(stationName, startDate, endDate=startDate) {
   #print(finalDF$Time[(finalDF$WindDirectionDegrees<0)]) #2016/09/20 
   # Sumary doesn't give the info I want
   #print(summary(intervals))
+  
+  # Timestamps may be duplicated:
+  print(finalDF$Time[duplicated(finalDF$Time)])
 }
 
 
@@ -128,11 +131,52 @@ getCleanPWSDataRange <- function(stationName, startDate, endDate) {
   }
   res <- lapply(dates,function(x) {
     tmpdf <- getPWSData(stationName,x)
-    # FIXME : get the timezone based on station data
-    tmpdf$Time <- force_tz(tmpdf$Time,"America/Mexico_city")
-#FIXME : the null check probably has to go before the previous line
+    # TODO : get the timezone based on station data
+    #tmpdf$Time <- force_tz(tmpdf$Time,"America/Mexico_city")
+    #FIXME : the null check probably has to go before the previous line
     if (is.null(tmpdf)) {return(NULL)}
     testData <- select(tmpdf, Time, WindDirectionDegrees, WindSpeedMPH, WindSpeedGustMPH)
+
+    # remove duplicated timestamps: It is possible that duplictes are the next
+    # 5 min TS that did not update
+    testData <- testData[!duplicated(testData$Time),]
+    
+    # Negatives become NA:
+    testData$WindSpeedMPH[testData$WindSpeedMPH<0]<-NA
+    testData$WindDirectionDegrees[testData$WindDirectionDegrees<0]<-NA
+    
+    # More than 360 degrees is NA:
+    testData$WindDirectionDegrees[testData$WindDirectionDegrees>360]<-NA
+
+    # It is mandatory to set the time zone before the interpolation
+    # time changes from CST to CDT when that happens
+    testData$Time <- force_tz(testData$Time,"America/Mexico_city")   
+    
+
+    # Interpolation using Zoo
+    myZoo <- convertPWSData2Zoo(testData)
+    resample <- seq(start(myZoo),end(myZoo),by="5 mins")
+    #print(resample)
+    emptyZoo <- zoo(,resample)
+    mergedZoo <- merge(myZoo,emptyZoo,all=TRUE)
+    mergedZoo <- na.approx(mergedZoo)
+    mergedZoo <- merge(mergedZoo,emptyZoo,all=FALSE)
+    #print(head(data.frame(Time=time(mergedZoo),coredata(mergedZoo))))
+    #print(time(mergedZoo))
+
+    
+    testData <- data.frame(Time=time(mergedZoo),coredata(mergedZoo))
+    attr(testData$Time, "tzone") <- attr(time(myZoo), "tzone")
+    #print(testData$Time)
+    
+    #print(str(testData$Time))
+    #print(resample)  
+    
+    #2013-03-10 01:05:00
+    #2013-03-10 01:05:00
+    #2013-03-10 01:15:00
+    #2013-03-10 01:15:00
+    
     # FIXME: Some extra cleaning can be done here
     # 2016-07-27 has negative on wind gust should be NA
     return(testData)
@@ -242,15 +286,27 @@ demoWindRose <- function() {
 }
 
 loc <- matrix(c(-89.3,21.3),nrow=1)
-df <- getCleanPWSDataRange("IYUCATNT2","2013/03/15","2013/03/15")
+#df <- getCleanPWSDataRange("IYUCATNT2","2012/03/10","2016/03/10")
+#df <- getCleanPWSDataRange("IYUCATNT2","2013/04/07","2013/04/07") # DL savings
+df <- getCleanPWSDataRange("IYUCATNT2","2012/01/01","2013/12/31")
 #dfsum <- df %>% group_by(date=as.Date(Time,tz=attr(Time,"tzone"))) %>%
 #  filter(Time>sunriset(loc, date, direction="sunrise", POSIXct.out=TRUE)[["time"]])
 #%>% summarise(num=n())
 
+# Debug timezone comparison
+#tmp <- df %>% group_by(date=floor_date(Time,unit="day")) %>%
+#  filter(Time>sunriset(loc, date, direction="sunrise", POSIXct.out=TRUE)[["time"]]) %>%
+#  filter(Time<sunriset(loc, date, direction="sunset", POSIXct.out=TRUE)[["time"]])
+#write.csv(tmp,"test3.csv")
+  
 dfsum <- df %>% group_by(date=floor_date(Time,unit="day")) %>%
   filter(Time>sunriset(loc, date, direction="sunrise", POSIXct.out=TRUE)[["time"]]) %>%
   filter(Time<sunriset(loc, date, direction="sunset", POSIXct.out=TRUE)[["time"]]) %>%
-  summarise(avgDlWindSpeedMPH=mean(WindSpeedMPH),avgDlWindDirectionDegrees=mean(WindDirectionDegrees),high=max(WindSpeedMPH))
+  summarise(
+    avgDlWindSpeedMPH=mean(WindSpeedMPH,na.rm=TRUE),
+    avgDlWindDirectionDegrees=mean(WindDirectionDegrees,na.rm=TRUE),
+    high=max(WindSpeedMPH,na.rm=TRUE)
+    )
 
 
 #windRose(dfsum,ws="avgDlWindSpeedMPH",wd="avgDlWindDirectionDegrees",cols='heat',angle=10,paddle=FALSE,ws.int=5,breaks=6,key.footer='mph')
@@ -258,7 +314,7 @@ calDF <- dfsum %>%
   rename(wd=avgDlWindDirectionDegrees) %>%
   mutate(ws=avgDlWindSpeedMPH)
 # There is some issue with the calendar and the type of object from dplyr
-#calendarPlot(calDF,year=2014,pollutant="avgDlWindSpeedMPH",annotate='value')
+calendarPlot(calDF,pollutant="avgDlWindSpeedMPH",annotate='value')
 
 # The whole period of time:
 #windRose(rename(df,date=Time,ws=WindSpeedMPH,wd=WindDirectionDegrees),cols='heat',angle=10,paddle=FALSE,ws.int=5,breaks=6,key.footer='mph')
@@ -269,9 +325,9 @@ monthSum <- dfsum %>%
   rename(target=avgDlWindSpeedMPH) %>%
   group_by(month) %>%
   summarise(
-    gteq15=(sum(target>=15)/n()),
-    gteq20=(sum(target>=20)/n()),
-    gteq25=(sum(target>=25)/n()),
+    gteq15=(sum(target>=15,na.rm=TRUE)/n()),
+    gteq20=(sum(target>=20,na.rm=TRUE)/n()),
+    gteq25=(sum(target>=25,na.rm=TRUE)/n()),
     total=n())
 
 
