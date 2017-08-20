@@ -39,7 +39,7 @@ getPWSData <- function(stationName,dateQuerry,forceWebQuerry=FALSE) {
     }
     #weatherDF <- data.frame(a=c(1,2,3),b=c(4,5,6))
     weatherDF <- getDetailedWeather(stationName, dateQuerry,station_type='id',opt_all_columns=TRUE)
-    Sys.sleep(5)
+    Sys.sleep(2)
     #print(head(weatherDF))
     # Caching code only executed if the force flag is not set
     if (!forceWebQuerry && !is.null(weatherDF)) {
@@ -84,6 +84,35 @@ getPWSZoo <- function(...) {
   return(convertPWSData2Zoo(getPWSData(...)))
 }
 
+exploreRawData <- function(stationName, startDate, endDate=startDate) {
+  dates <- seq(as.Date(startDate), as.Date(endDate), by="days")
+  #cheating:
+  badDates <- as.Date(readLines('bad_dates.txt'))
+  dates <- dates[!(dates %in% badDates)]
+  res <- lapply(dates,function(x) {
+    tmpdf <- getPWSData(stationName,x)
+    if (is.null(tmpdf)) {return(NULL)}
+    testData <- select(tmpdf, Time, WindDirectionDegrees, WindSpeedMPH, WindSpeedGustMPH)
+    return(testData)
+  })
+  nullRecords <- sum(sapply(res,is.null))
+  print(sprintf("The number of missing day records from %s to %s in %s is %d",
+                startDate,endDate,stationName,nullRecords))
+  finalDF <- do.call(rbind,res)
+  print(summary(finalDF))
+  write.csv(finalDF, "test.csv")
+  #return(finalDF)
+  intervals <- with(finalDF,difftime(Time[-1],Time[-length(Time)]))
+  print(head(sort(table(intervals),decreasing=TRUE)))
+  print(mean(intervals))
+  print(fivenum(intervals))
+  #print(finalDF$Time[(finalDF$WindSpeedMPH<0)]) #2013/03/15
+  #print(finalDF$Time[(finalDF$WindDirectionDegrees<0)]) #2016/09/20 
+  # Sumary doesn't give the info I want
+  #print(summary(intervals))
+}
+
+
 getCleanPWSDataRange <- function(stationName, startDate, endDate) {
   dates <- seq(as.Date(startDate), as.Date(endDate), by="days")
   #badDates <- as.Date(readLines('bad_dates.txt'))
@@ -101,6 +130,7 @@ getCleanPWSDataRange <- function(stationName, startDate, endDate) {
     tmpdf <- getPWSData(stationName,x)
     # FIXME : get the timezone based on station data
     tmpdf$Time <- force_tz(tmpdf$Time,"America/Mexico_city")
+#FIXME : the null check probably has to go before the previous line
     if (is.null(tmpdf)) {return(NULL)}
     testData <- select(tmpdf, Time, WindDirectionDegrees, WindSpeedMPH, WindSpeedGustMPH)
     # FIXME: Some extra cleaning can be done here
@@ -212,7 +242,7 @@ demoWindRose <- function() {
 }
 
 loc <- matrix(c(-89.3,21.3),nrow=1)
-df <- getCleanPWSDataRange("IYUCATNT2","2014/01/15","2014/01/15")
+df <- getCleanPWSDataRange("IYUCATNT2","2013/03/15","2013/03/15")
 #dfsum <- df %>% group_by(date=as.Date(Time,tz=attr(Time,"tzone"))) %>%
 #  filter(Time>sunriset(loc, date, direction="sunrise", POSIXct.out=TRUE)[["time"]])
 #%>% summarise(num=n())
@@ -228,7 +258,7 @@ calDF <- dfsum %>%
   rename(wd=avgDlWindDirectionDegrees) %>%
   mutate(ws=avgDlWindSpeedMPH)
 # There is some issue with the calendar and the type of object from dplyr
-calendarPlot(calDF,year=2014,pollutant="avgDlWindSpeedMPH",annotate='value')
+#calendarPlot(calDF,year=2014,pollutant="avgDlWindSpeedMPH",annotate='value')
 
 # The whole period of time:
 #windRose(rename(df,date=Time,ws=WindSpeedMPH,wd=WindDirectionDegrees),cols='heat',angle=10,paddle=FALSE,ws.int=5,breaks=6,key.footer='mph')
