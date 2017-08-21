@@ -300,7 +300,7 @@ loc <- matrix(c(-89.3,21.3),nrow=1)
 #df <- getCleanPWSDataRange("IYUCATNT2","2013/04/07","2013/04/07") # DL savings
 #df <- getCleanPWSDataRange("IYUCATNT2","2012/01/01","2013/12/31")
 #df <- getCleanPWSDataRange("IYUCATNT2","2016/01/01","2016/01/01")
-#df <- getCleanPWSDataRange("IYUCATNT2","2012/01/01","2012/01/02") # 2 high winds
+#df <- getCleanPWSDataRange("IYUCATNT2","2012/01/01","2012/01/07") # 2 high winds
 df <- getCleanPWSDataRange("IYUCATNT2","2012/01/01","2016/12/31") #Whole
 
 #daySum <- df %>% group_by(date=as.Date(Time,tz=attr(Time,"tzone"))) %>%
@@ -313,7 +313,8 @@ df <- getCleanPWSDataRange("IYUCATNT2","2012/01/01","2016/12/31") #Whole
 #  filter(Time<sunriset(loc, date, direction="sunset", POSIXct.out=TRUE)[["time"]])
 #write.csv(tmp,"test3.csv")
 
-thresholdPeriod <- dhours(1.5)
+#thresholdPeriod <- dhours(1.5)
+thresholdPeriod <- dhours(2)
 timeIntervals <- dminutes(5)
 thresholdNum <- thresholdPeriod/timeIntervals
 
@@ -334,17 +335,32 @@ daySum <- dayLightGroup  %>%
                            ifelse(periodLength20>0,20,
                                   ifelse(periodLength15>0,15,
                                          0))),
+    avgDlWindDirectionDegreesGt15=ifelse(periodLength15>0,
+      mean(ifelse(WindSpeedMPH>=15,WindDirectionDegrees,NA),na.rm=TRUE),
+      NA),
+    avgDlWindSpeedMPHGt15=ifelse(periodLength15>0,
+      mean(ifelse(WindSpeedMPH>=15,WindSpeedMPH,NA),na.rm=TRUE),
+      NA),
     high=max(WindSpeedMPH,na.rm=TRUE)
     )
 
+# Not important just for debug:
+#daySumGt15 <- dayLightGroup  %>%
+#  filter(WindSpeedMPH>=15) %>%
+#  summarise(
+#    avgDlWindSpeedMPHGt15=mean(WindSpeedMPH,na.rm=TRUE),
+#    avgDlWindDirectionDegreesGt15=mean(WindDirectionDegrees,na.rm=TRUE)
+#  )
+
+#aboveAvg=ifelse(n()>0,mean(WindSpeedMPH),0))
 
 #windRose(daySum,ws="avgDlWindSpeedMPH",wd="avgDlWindDirectionDegrees",cols='heat',angle=10,paddle=FALSE,ws.int=5,breaks=6,key.footer='mph')
 calDF <- daySum %>%
-  rename(wd=avgDlWindDirectionDegrees) %>%
-  mutate(ws=avgDlWindSpeedMPH)
+  rename(wd=avgDlWindDirectionDegreesGt15) %>%
+  mutate(ws=avgDlWindSpeedMPHGt15)
 # There is some issue with the calendar and the type of object from dplyr
 #calendarPlot(calDF,pollutant="avgDlWindSpeedMPH",annotate='value')
-#calendarPlot(calDF,pollutant="avgDlWindSpeedMPH",annotate='value')
+calendarPlot(calDF,pollutant="pseudoWindSpeed",annotate='ws')
 
 # The whole period of time:
 #windRose(rename(df,date=Time,ws=WindSpeedMPH,wd=WindDirectionDegrees),cols='heat',angle=10,paddle=FALSE,ws.int=5,breaks=6,key.footer='mph')
