@@ -366,14 +366,22 @@ getPWSMap <- function(stationName) {
 # Worked with this one:
 # lon, lat
 #loc <- matrix(c(-89.3,21.3),nrow=1)
+stationID <- "IYUCATNT2"
+loc <- getPWSLocation(stationID)
+startDateStr <- "2012/01/01"
+endDateStr <- "2016/12/31"
 
-loc <- getPWSLocation("IYUCATNT2")
-#df <- getCleanPWSDataRange("IYUCATNT2","2012/03/10","2016/03/10")
-#df <- getCleanPWSDataRange("IYUCATNT2","2013/04/07","2013/04/07") # DL savings
-#df <- getCleanPWSDataRange("IYUCATNT2","2012/01/01","2013/12/31")
-#df <- getCleanPWSDataRange("IYUCATNT2","2016/01/01","2016/01/01")
-#df <- getCleanPWSDataRange("IYUCATNT2","2012/01/01","2012/01/07") # 2 high winds
-df <- getCleanPWSDataRange("IYUCATNT2","2012/01/01","2016/12/31") #Whole
+if (FALSE) {
+  
+#df <- getCleanPWSDataRange(stationID,"2012/03/10","2016/03/10")
+#df <- getCleanPWSDataRange(stationID,"2013/04/07","2013/04/07") # DL savings
+#df <- getCleanPWSDataRange(stationID,"2012/01/01","2013/12/31")
+#df <- getCleanPWSDataRange(stationID,"2016/01/01","2016/01/01")
+#df <- getCleanPWSDataRange(stationID,"2012/01/01","2012/01/07") # 2 high winds
+#df <- getCleanPWSDataRange(stationID,"2014/01/01","2014/12/31") #2014
+#df <- getCleanPWSDataRange(stationID,"2012/01/01","2016/12/31") #Whole
+
+df <- getCleanPWSDataRange(stationID,startDateStr,endDateStr) #Whole
 
 #daySum <- df %>% group_by(date=as.Date(Time,tz=attr(Time,"tzone"))) %>%
 #  filter(Time>sunriset(loc, date, direction="sunrise", POSIXct.out=TRUE)[["time"]])
@@ -466,3 +474,6 @@ print(plt)
 write.csv(daySum, "test2.csv")
 write.csv(monthSum, "test3.csv")
 #sunriset(loc, date, direction="sunrise", POSIXct.out=TRUE)$time
+
+}
+

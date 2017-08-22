@@ -93,17 +93,26 @@ duplicated(Time)           | Delete
 
 The data is a time series which should be indexed by the Time column. The data set doesn’t have any information of the time zone which becomes important for future analysis. We had to force such information to the Time column setting the timezone to "America/Mexico_city"
 
-The minimum difference between readings of the same day is 5 minutes but there are situations when the reading for the next 5 min is not taken or the period shifts. The following table shows the 5 most common intervals in the data set:
+The minimum difference between readings of the same day is 5 minutes but there are situations when the reading for the next 5 min is not taken or the period shifts. The following table shows the 5 most common intervals in the data set (in seconds):
 
 ```{r interval_info}
 Intervals <- with(rawDataInfo$data,difftime(Time[-1],Time[-length(Time)]))
-tmp <- data.frame(head(sort(table(Intervals),decreasing=TRUE)))
+tmp <- data.frame(head(sort(table(Intervals),decreasing=TRUE),5))
 knitr::kable(tmp)
 #colnames(tmp) <- c("Interval","Frequency")
 #head(sort(table(intervals),decreasing=TRUE),5)
 
 ```
 
+
+In order to make the data set more manageable for future processing we decided to make each day evenly sampled at 5 minutes interval adding interpolated values in the case of missing timestamp.
+
+Since the data set is a temporal series we converted the data to zoo objects in R and executed the following steps for interpolation for each day:
+
+1. Create a new empty data set (zoo) with only a time series starting with the first timestamp of the day we want to interpolate, ending with the same timestamp as the original data set and equally spaced by 5 minutes.
+2. Merge the new empty data set with the old original one for the date as a full outer join creating NA readings for the timestamps that didn’t exist.
+3. Use the operation na.approx on the merged zoo object which will result in approximating the NA values using interpolation between neighboring readings.
+4. Merge again the empty dataset with the merged data set as a natural join. This will eliminate any irregular reading taken outside the 5 min sampling rate.
 
 
 ## R Markdown
