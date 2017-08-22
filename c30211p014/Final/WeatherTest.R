@@ -363,6 +363,41 @@ getPWSMap <- function(stationName) {
   return(plt)
 }
 
+computeDailySummary <- function(wholeDF,location,thresHourPeriod ) {
+thresholdPeriod <- dhours(thresHourPeriod)
+timeIntervals <- dminutes(5)
+thresholdNum <- thresholdPeriod/timeIntervals
+
+# Group by day, extract only daylight readings:
+dayLightGroup <- df %>% group_by(date=floor_date(Time,unit="day")) %>%
+  filter(Time>sunriset(location, date, direction="sunrise", POSIXct.out=TRUE)[["time"]]) %>%
+  filter(Time<sunriset(location, date, direction="sunset", POSIXct.out=TRUE)[["time"]])
+
+# summary by day with no filters
+dailySummary <- dayLightGroup  %>%
+  summarise(
+    avgDlWindSpeedMPH=mean(WindSpeedMPH,na.rm=TRUE),
+    avgDlWindDirectionDegrees=mean(WindDirectionDegrees,na.rm=TRUE),
+    periodLength15=periodLength(WindSpeedMPH,15,thresholdNum),
+    periodLength20=periodLength(WindSpeedMPH,20,thresholdNum),
+    periodLength25=periodLength(WindSpeedMPH,25,thresholdNum),
+    pseudoWindSpeed=ifelse(periodLength25>0,25,
+                           ifelse(periodLength20>0,20,
+                                  ifelse(periodLength15>0,15,
+                                         0))),
+    avgDlWindDirectionDegreesGt15=ifelse(periodLength15>0,
+      mean(ifelse(WindSpeedMPH>=15,WindDirectionDegrees,NA),na.rm=TRUE),
+      NA),
+    avgDlWindSpeedMPHGt15=ifelse(periodLength15>0,
+      mean(ifelse(WindSpeedMPH>=15,WindSpeedMPH,NA),na.rm=TRUE),
+      NA),
+    high=max(WindSpeedMPH,na.rm=TRUE)
+    )
+return(dailySummary)
+}
+
+
+
 # Worked with this one:
 # lon, lat
 #loc <- matrix(c(-89.3,21.3),nrow=1)
@@ -371,8 +406,8 @@ loc <- getPWSLocation(stationID)
 startDateStr <- "2012/01/01"
 endDateStr <- "2016/12/31"
 
-if (FALSE) {
-  
+if (TRUE) {
+startRunTime <- Sys.time() 
 #df <- getCleanPWSDataRange(stationID,"2012/03/10","2016/03/10")
 #df <- getCleanPWSDataRange(stationID,"2013/04/07","2013/04/07") # DL savings
 #df <- getCleanPWSDataRange(stationID,"2012/01/01","2013/12/31")
@@ -393,8 +428,12 @@ df <- getCleanPWSDataRange(stationID,startDateStr,endDateStr) #Whole
 #  filter(Time<sunriset(loc, date, direction="sunset", POSIXct.out=TRUE)[["time"]])
 #write.csv(tmp,"test3.csv")
 
+daySum <- computeDailySummary(df,loc,2)
+
+if (FALSE) {
 #thresholdPeriod <- dhours(1.5)
 thresholdPeriod <- dhours(2)
+#thresholdPeriod <- as.duration("2 hours")
 timeIntervals <- dminutes(5)
 thresholdNum <- thresholdPeriod/timeIntervals
 
@@ -423,6 +462,7 @@ daySum <- dayLightGroup  %>%
       NA),
     high=max(WindSpeedMPH,na.rm=TRUE)
     )
+}
 
 # Not important just for debug:
 #daySumGt15 <- dayLightGroup  %>%
@@ -476,5 +516,7 @@ write.csv(daySum, "test2.csv")
 write.csv(monthSum, "test3.csv")
 #sunriset(loc, date, direction="sunrise", POSIXct.out=TRUE)$time
 
+diffRunTime <- Sys.time() - startRunTime
+print(diffRunTime)
 }
 
