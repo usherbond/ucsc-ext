@@ -121,20 +121,21 @@ getRawData <- function(stationName, startDate, endDate=startDate) {
 }
  
 exploreRawData <- function(stationName, startDate, endDate=startDate) {
-  dates <- seq(as.Date(startDate), as.Date(endDate), by="days")
-  #cheating:
-  #badDates <- as.Date(readLines('bad_dates.txt'))
-  #dates <- dates[!(dates %in% badDates)]
-  res <- lapply(dates,function(x) {
-    tmpdf <- getPWSData(stationName,x)
-    if (is.null(tmpdf)) {return(NULL)}
-    testData <- select(tmpdf, Time, WindDirectionDegrees, WindSpeedMPH, WindSpeedGustMPH)
-    return(testData)
-  })
-  nullRecords <- sum(sapply(res,is.null))
+  #dates <- seq(as.Date(startDate), as.Date(endDate), by="days")
+  #res <- lapply(dates,function(x) {
+  #  tmpdf <- getPWSData(stationName,x)
+  #  if (is.null(tmpdf)) {return(NULL)}
+  #  testData <- select(tmpdf, Time, WindDirectionDegrees, WindSpeedMPH, WindSpeedGustMPH)
+  #  return(testData)
+  #})
+  #nullRecords <- sum(sapply(res,is.null))
+  #finalDF <- do.call(rbind,res)
+
+  dataList <-getRawData(stationName, startDate, endDate)
+  finalDF <- dataList$data
+
   print(sprintf("The number of missing day records from %s to %s in %s is %d",
-                startDate,endDate,stationName,nullRecords))
-  finalDF <- do.call(rbind,res)
+                startDate,endDate,stationName,dataList$badRecords))
   print(summary(finalDF))
   write.csv(finalDF, "test.csv")
   #return(finalDF)
