@@ -34,7 +34,9 @@ Original source is the weather station from the CINVESTAV (Mexican research cent
 
 ```{r sample_date, include=FALSE}
 # Helper vars
-sampleDate <- "January 15, 2016"
+#sampleDate <- "January 15, 2016" #orig
+sampleDate <- "April 18, 2016"
+#sampleDate <- "March 20, 2016"
 startYear <- year(startDateStr)
 endYear <- year(endDateStr)
 yearSpan <- 1 + endYear-startYear 
@@ -42,7 +44,9 @@ yearSpan <- 1 + endYear-startYear
 sampleData <- getPWSData(stationID, as.Date(sampleDate,"%B %d, %Y")) %>%
   select(Time,WindDirection,WindDirectionDegrees,WindSpeedMPH,WindSpeedGustMPH)
 
-rawDataInfo <- getRawData(stationID,startDateStr,"2012/03/31")
+#TODO : use real start and end
+#rawDataInfo <- getRawData(stationID,startDateStr,endDateStr)
+rawDataInfo <- getRawData(stationID,"2012/01/01","2012/03/31")
 
 ```
 
@@ -113,6 +117,7 @@ Since the data set is a temporal series we converted the data to zoo objects in 
 2. Merge the new empty data set with the old original one for the date as a full outer join creating NA readings for the timestamps that didn’t exist.
 3. Use the operation na.approx on the merged zoo object which will result in approximating the NA values using interpolation between neighboring readings.
 4. Merge again the empty dataset with the merged data set as a natural join. This will eliminate any irregular reading taken outside the 5 min sampling rate.
+
 
 
 ## R Markdown

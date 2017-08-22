@@ -153,7 +153,17 @@ exploreRawData <- function(stationName, startDate, endDate=startDate) {
   print(finalDF$Time[duplicated(finalDF$Time)])
 }
 
+interpolateZoo <- function(myZoo) {
 
+  #return(myZoo)
+  resample <- seq(start(myZoo),end(myZoo),by="5 mins")
+
+  emptyZoo <- zoo(,resample)
+  mergedZoo <- merge(myZoo,emptyZoo,all=TRUE)
+  mergedZoo <- na.approx(mergedZoo)
+  mergedZoo <- merge(mergedZoo,emptyZoo,all=FALSE)
+  return(mergedZoo)
+}
 getCleanPWSDataRange <- function(stationName, startDate, endDate) {
   dates <- seq(as.Date(startDate), as.Date(endDate), by="days")
   #badDates <- as.Date(readLines('bad_dates.txt'))
@@ -193,17 +203,7 @@ getCleanPWSDataRange <- function(stationName, startDate, endDate) {
 
     # Interpolation using Zoo
     myZoo <- convertPWSData2Zoo(testData)
-    #plot(myZoo$WindSpeedMPH)
-    #abline(h=15)
-    resample <- seq(start(myZoo),end(myZoo),by="5 mins")
-    #print(resample)
-    emptyZoo <- zoo(,resample)
-    mergedZoo <- merge(myZoo,emptyZoo,all=TRUE)
-    mergedZoo <- na.approx(mergedZoo)
-    mergedZoo <- merge(mergedZoo,emptyZoo,all=FALSE)
-    #print(head(data.frame(Time=time(mergedZoo),coredata(mergedZoo))))
-    #print(time(mergedZoo))
-
+    mergedZoo <- interpolateZoo(myZoo)
     
     testData <- data.frame(Time=time(mergedZoo),coredata(mergedZoo))
     attr(testData$Time, "tzone") <- attr(time(myZoo), "tzone")
@@ -371,7 +371,7 @@ loc <- getPWSLocation(stationID)
 startDateStr <- "2012/01/01"
 endDateStr <- "2016/12/31"
 
-if (FALSE) {
+if (TRUE) {
   
 #df <- getCleanPWSDataRange(stationID,"2012/03/10","2016/03/10")
 #df <- getCleanPWSDataRange(stationID,"2013/04/07","2013/04/07") # DL savings
@@ -440,7 +440,8 @@ calDF <- daySum %>%
   mutate(ws=avgDlWindSpeedMPHGt15)
 # There is some issue with the calendar and the type of object from dplyr
 #calendarPlot(calDF,pollutant="avgDlWindSpeedMPH",annotate='value')
-calendarPlot(calDF,pollutant="pseudoWindSpeed",annotate='ws')
+calendarPlot(calDF,pollutant="pseudoWindSpeed",annotate='ws', year=2016)
+#calendarPlot(calDF,pollutant="pseudoWindSpeed", year=2016)
 
 # The whole period of time:
 #windRose(rename(df,date=Time,ws=WindSpeedMPH,wd=WindDirectionDegrees),cols='heat',angle=10,paddle=FALSE,ws.int=5,breaks=6,key.footer='mph')
