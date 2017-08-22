@@ -364,36 +364,38 @@ getPWSMap <- function(stationName) {
 }
 
 computeDailySummary <- function(wholeDF,location,thresHourPeriod ) {
-thresholdPeriod <- dhours(thresHourPeriod)
-timeIntervals <- dminutes(5)
-thresholdNum <- thresholdPeriod/timeIntervals
 
-# Group by day, extract only daylight readings:
-dayLightGroup <- df %>% group_by(date=floor_date(Time,unit="day")) %>%
-  filter(Time>sunriset(location, date, direction="sunrise", POSIXct.out=TRUE)[["time"]]) %>%
-  filter(Time<sunriset(location, date, direction="sunset", POSIXct.out=TRUE)[["time"]])
+  thresholdPeriod <- dhours(thresHourPeriod)
+  timeIntervals <- dminutes(5)
+  thresholdNum <- thresholdPeriod/timeIntervals
 
-# summary by day with no filters
-dailySummary <- dayLightGroup  %>%
-  summarise(
-    avgDlWindSpeedMPH=mean(WindSpeedMPH,na.rm=TRUE),
-    avgDlWindDirectionDegrees=mean(WindDirectionDegrees,na.rm=TRUE),
-    periodLength15=periodLength(WindSpeedMPH,15,thresholdNum),
-    periodLength20=periodLength(WindSpeedMPH,20,thresholdNum),
-    periodLength25=periodLength(WindSpeedMPH,25,thresholdNum),
-    pseudoWindSpeed=ifelse(periodLength25>0,25,
-                           ifelse(periodLength20>0,20,
-                                  ifelse(periodLength15>0,15,
-                                         0))),
-    avgDlWindDirectionDegreesGt15=ifelse(periodLength15>0,
-      mean(ifelse(WindSpeedMPH>=15,WindDirectionDegrees,NA),na.rm=TRUE),
-      NA),
-    avgDlWindSpeedMPHGt15=ifelse(periodLength15>0,
-      mean(ifelse(WindSpeedMPH>=15,WindSpeedMPH,NA),na.rm=TRUE),
-      NA),
-    high=max(WindSpeedMPH,na.rm=TRUE)
-    )
-return(dailySummary)
+
+  # Group by day, extract only daylight readings:
+  dayLightGroup <- df %>% group_by(date=floor_date(Time,unit="day")) %>%
+    filter(Time>sunriset(location, date, direction="sunrise", POSIXct.out=TRUE)[["time"]]) %>%
+    filter(Time<sunriset(location, date, direction="sunset", POSIXct.out=TRUE)[["time"]])
+
+  # summary by day with no filters
+  dailySummary <- dayLightGroup  %>%
+    summarise(
+      avgDlWindSpeedMPH=mean(WindSpeedMPH,na.rm=TRUE),
+      avgDlWindDirectionDegrees=mean(WindDirectionDegrees,na.rm=TRUE),
+      periodLength15=periodLength(WindSpeedMPH,15,thresholdNum),
+      periodLength20=periodLength(WindSpeedMPH,20,thresholdNum),
+      periodLength25=periodLength(WindSpeedMPH,25,thresholdNum),
+      pseudoWindSpeed=ifelse(periodLength25>0,25,
+                             ifelse(periodLength20>0,20,
+                                    ifelse(periodLength15>0,15,
+                                           0))),
+      avgDlWindDirectionDegreesGt15=ifelse(periodLength15>0,
+        mean(ifelse(WindSpeedMPH>=15,WindDirectionDegrees,NA),na.rm=TRUE),
+        NA),
+      avgDlWindSpeedMPHGt15=ifelse(periodLength15>0,
+        mean(ifelse(WindSpeedMPH>=15,WindSpeedMPH,NA),na.rm=TRUE),
+        NA),
+      high=max(WindSpeedMPH,na.rm=TRUE)
+      )
+  return(dailySummary)
 }
 
 
@@ -430,40 +432,6 @@ df <- getCleanPWSDataRange(stationID,startDateStr,endDateStr) #Whole
 
 daySum <- computeDailySummary(df,loc,2)
 
-if (FALSE) {
-#thresholdPeriod <- dhours(1.5)
-thresholdPeriod <- dhours(2)
-#thresholdPeriod <- as.duration("2 hours")
-timeIntervals <- dminutes(5)
-thresholdNum <- thresholdPeriod/timeIntervals
-
-# Group by day, extract only daylight readings:
-dayLightGroup <- df %>% group_by(date=floor_date(Time,unit="day")) %>%
-  filter(Time>sunriset(loc, date, direction="sunrise", POSIXct.out=TRUE)[["time"]]) %>%
-  filter(Time<sunriset(loc, date, direction="sunset", POSIXct.out=TRUE)[["time"]])
-
-# summary by day with no filters
-daySum <- dayLightGroup  %>%
-  summarise(
-    avgDlWindSpeedMPH=mean(WindSpeedMPH,na.rm=TRUE),
-    avgDlWindDirectionDegrees=mean(WindDirectionDegrees,na.rm=TRUE),
-    periodLength15=periodLength(WindSpeedMPH,15,thresholdNum),
-    periodLength20=periodLength(WindSpeedMPH,20,thresholdNum),
-    periodLength25=periodLength(WindSpeedMPH,25,thresholdNum),
-    pseudoWindSpeed=ifelse(periodLength25>0,25,
-                           ifelse(periodLength20>0,20,
-                                  ifelse(periodLength15>0,15,
-                                         0))),
-    avgDlWindDirectionDegreesGt15=ifelse(periodLength15>0,
-      mean(ifelse(WindSpeedMPH>=15,WindDirectionDegrees,NA),na.rm=TRUE),
-      NA),
-    avgDlWindSpeedMPHGt15=ifelse(periodLength15>0,
-      mean(ifelse(WindSpeedMPH>=15,WindSpeedMPH,NA),na.rm=TRUE),
-      NA),
-    high=max(WindSpeedMPH,na.rm=TRUE)
-    )
-}
-
 # Not important just for debug:
 #daySumGt15 <- dayLightGroup  %>%
 #  filter(WindSpeedMPH>=15) %>%
@@ -488,7 +456,8 @@ calendarPlot(calDF,pollutant="pseudoWindSpeed",annotate='ws', year=2016)
 
 #sumarizing by month
 monthSum <- daySum %>%
-  mutate(month=as.factor(months(date))) %>%
+#  mutate(month=as.factor(months(date))) %>%
+  mutate(month=(month(date,label=TRUE,abbr=FALSE))) %>%
 #  rename(target=avgDlWindSpeedMPH) %>%
   rename(target=pseudoWindSpeed) %>%
   group_by(month) %>%
