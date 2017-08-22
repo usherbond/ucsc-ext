@@ -5,6 +5,7 @@ library(dplyr)
 library(openair)
 library(maptools)
 library(ggplot2)
+library(ggmap)
 
 getPWSData <- function(stationName,dateQuerry,forceWebQuerry=FALSE) {
   if (!is.character(stationName)) {
@@ -332,13 +333,47 @@ periodLength <- function(measurements,threshVal,threshLength) {
   return(perLen)
 }
 
-loc <- matrix(c(-89.3,21.3),nrow=1)
+# TODO: Querry the location from a somewhere but for now hard coded
+getPWSLocation <- function(stationName) {
+  if (!is.character(stationName)) {
+    stop("stationName should be a string")
+  }
+  if (stationName != "IYUCATNT2") {
+    stop(sprintf("Station %s not supported",stationName))
+  }
+  #Copy paste from web:
+  #"lat":"21.341108",
+  #"lon":"-89.305756",
+  # Original dev:
+  #lon <- -89.3
+  #lat <- 21.3
+  lon <- -89.305756
+  lat <- 21.341108
+  loc <- matrix(c(lon,lat),nrow=1)
+  colnames(loc) <- c("lon","lat")
+  return(loc)
+}
+
+getPWSMap <- function(stationName) {
+  loc <- getPWSLocation(stationName)
+  map <- get_map(location="Yucatan",zoom=5)
+  plt <- ggmap(map) +
+    geom_point(aes(x = lon, y = lat), data = data.frame(loc), alpha = .75, col='red', size=2) +
+    labs(title="Location of sensor", x="", y="")
+  return(plt)
+}
+
+# Worked with this one:
+# lon, lat
+#loc <- matrix(c(-89.3,21.3),nrow=1)
+
+loc <- getPWSLocation("IYUCATNT2")
 #df <- getCleanPWSDataRange("IYUCATNT2","2012/03/10","2016/03/10")
 #df <- getCleanPWSDataRange("IYUCATNT2","2013/04/07","2013/04/07") # DL savings
 #df <- getCleanPWSDataRange("IYUCATNT2","2012/01/01","2013/12/31")
 #df <- getCleanPWSDataRange("IYUCATNT2","2016/01/01","2016/01/01")
-df <- getCleanPWSDataRange("IYUCATNT2","2012/01/01","2012/01/07") # 2 high winds
-#df <- getCleanPWSDataRange("IYUCATNT2","2012/01/01","2016/12/31") #Whole
+#df <- getCleanPWSDataRange("IYUCATNT2","2012/01/01","2012/01/07") # 2 high winds
+df <- getCleanPWSDataRange("IYUCATNT2","2012/01/01","2016/12/31") #Whole
 
 #daySum <- df %>% group_by(date=as.Date(Time,tz=attr(Time,"tzone"))) %>%
 #  filter(Time>sunriset(loc, date, direction="sunrise", POSIXct.out=TRUE)[["time"]])
@@ -429,4 +464,5 @@ print(plt)
 
 #print(df)
 write.csv(daySum, "test2.csv")
+write.csv(monthSum, "test3.csv")
 #sunriset(loc, date, direction="sunrise", POSIXct.out=TRUE)$time
