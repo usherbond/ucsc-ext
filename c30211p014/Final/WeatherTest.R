@@ -223,7 +223,6 @@ getCleanPWSDataRange <- function(stationName, startDate, endDate) {
   })
   #print(dates)
   finalDF <- do.call(rbind,res)
-  write.csv(finalDF, "test.csv")
   return(finalDF)
 }
 
@@ -476,22 +475,6 @@ calendarPlot(calDF,pollutant="pseudoWindSpeed",annotate='ws', year=2016)
 
 monthSum  <- computeMontlySummary(daySum)
 
-if(FALSE) {
-#sumarizing by month
-monthSum <- daySum %>%
-#  mutate(month=as.factor(months(date))) %>%
-  mutate(month=(month(date,label=TRUE,abbr=FALSE))) %>%
-#  rename(target=avgDlWindSpeedMPH) %>%
-  rename(target=pseudoWindSpeed) %>%
-  group_by(month) %>%
-  summarise(
-    gteq15=(sum(target>=15,na.rm=TRUE)/n()),
-    gteq20=(sum(target>=20,na.rm=TRUE)/n()),
-    gteq25=(sum(target>=25,na.rm=TRUE)/n()),
-    total=n())
-}
-
-
 #plt <- ggplot(monthSum) + aes(x=month, fill=gteq15) + geom_bar(position="fill") + scale_y_continuous(labels=percent_format())
 #plt <- ggplot(monthSum, aes(x=month, y=gteq15*100, fill = variable)) + geom_bar(stat = 'identity')
 #plt <- ggplot(monthSum, aes(x=month, y=gteq15)) + geom_bar(fill="yellow",stat='identity',alpha=0.9) 
@@ -505,6 +488,7 @@ plt <- ggplot(NULL, aes(x=month, y=prop)) +
 print(plt)
 
 #print(df)
+write.csv(df, "test.csv")
 write.csv(daySum, "test2.csv")
 write.csv(monthSum, "test3.csv")
 #sunriset(loc, date, direction="sunrise", POSIXct.out=TRUE)$time
