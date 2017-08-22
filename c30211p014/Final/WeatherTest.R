@@ -399,35 +399,35 @@ computeDailySummary <- function(wholeDF,location,thresHourPeriod ) {
 
 
 computeMontlySummary <- function(dailySummary) {
-#sumarizing by month
-monthySummary <- dailySummary %>%
-#  mutate(month=as.factor(months(date))) %>%
-  mutate(month=(month(date,label=TRUE,abbr=FALSE))) %>%
-#  rename(target=avgDlWindSpeedMPH) %>%
-  rename(target=pseudoWindSpeed) %>%
-  group_by(month) %>%
-  summarise(
-    gteq15=(sum(target>=15,na.rm=TRUE)/n()),
-    gteq20=(sum(target>=20,na.rm=TRUE)/n()),
-    gteq25=(sum(target>=25,na.rm=TRUE)/n()),
-    total=n())
-
-return(monthySummary)
+  #sumarizing by month
+  monthySummary <- dailySummary %>%
+  #  mutate(month=as.factor(months(date))) %>%
+    mutate(month=(month(date,label=TRUE,abbr=FALSE))) %>%
+  #  rename(target=avgDlWindSpeedMPH) %>%
+    rename(target=pseudoWindSpeed) %>%
+    group_by(month) %>%
+    summarise(
+      gteq15=(sum(target>=15,na.rm=TRUE)/n()),
+      gteq20=(sum(target>=20,na.rm=TRUE)/n()),
+      gteq25=(sum(target>=25,na.rm=TRUE)/n()),
+      total=n())
+  return(monthySummary)
 
 }
 
 
 
 
+if (TRUE) {
 # Worked with this one:
 # lon, lat
 #loc <- matrix(c(-89.3,21.3),nrow=1)
 stationID <- "IYUCATNT2"
 loc <- getPWSLocation(stationID)
-startDateStr <- "2012/01/01"
+#startDateStr <- "2012/01/01"
+startDateStr <- "2016/01/01"
 endDateStr <- "2016/12/31"
 
-if (TRUE) {
 startRunTime <- Sys.time() 
 #df <- getCleanPWSDataRange(stationID,"2012/03/10","2016/03/10")
 #df <- getCleanPWSDataRange(stationID,"2013/04/07","2013/04/07") # DL savings
@@ -438,6 +438,18 @@ startRunTime <- Sys.time()
 #df <- getCleanPWSDataRange(stationID,"2012/01/01","2016/12/31") #Whole
 
 df <- getCleanPWSDataRange(stationID,startDateStr,endDateStr) #Whole
+windRose(
+  rename(df,ws=WindSpeedMPH,wd=WindDirectionDegrees,date=Time),
+  cols='heat',
+  type='month',
+  angle=18,
+  paddle=FALSE,
+  ws.int=5,
+  breaks=6,
+  key.footer='mph')
+#  ws="WindSpeedMPH",wd="WindDirectionDegrees")
+print("DONE")
+
 
 #daySum <- df %>% group_by(date=as.Date(Time,tz=attr(Time,"tzone"))) %>%
 #  filter(Time>sunriset(loc, date, direction="sunrise", POSIXct.out=TRUE)[["time"]])

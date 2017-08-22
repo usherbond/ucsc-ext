@@ -19,7 +19,16 @@ Explain kite sizes and why we separate in 15, 20 and 25 mph
 
 
 ```{r data_setup, include=FALSE}
+executionStart <- Sys.time()
 source('WeatherTest.R')
+# General variables:
+stationID <- "IYUCATNT2"
+loc <- getPWSLocation(stationID)
+startDateStr <- "2012/01/01"
+#startDateStr <- "2016/01/01"
+endDateStr <- "2016/12/31"
+#endDateStr <- "2016/01/31"
+
 ```
 
 ### Data Sources
@@ -150,7 +159,43 @@ rm(rawDataInfo,sampleZoo,intZoo,Intervals,periodLength,pseudoDate,sampleData,int
 ls()
 ```
 
+## Analysis
 
+### Whole Data Set Analysis
+
+```{r whole_data_set, include=FALSE}
+# This section needs to be completely silenced
+df <- getCleanPWSDataRange(stationID,startDateStr,endDateStr) #Whole
+#knitr::kable(df) #Dont print this it is for debug only
+```
+
+The first analysis done after cleaning the date was to get a windrose diagram to see the wind speed and direction distribution for the `r yearSpan` years we are analyzing. A windrose diagram is just a histogram in polar coordinates. It is divided by month since we are interested on finding the good season for kiting.
+
+```{r wind_rose_whole, echo=FALSE, warning=FALSE, fig.align='center',fig.height=8, fig.width=8}
+# There is a warning comming from this function
+windRose(
+  rename(df,ws=WindSpeedMPH,wd=WindDirectionDegrees,date=Time),
+  cols='heat',
+  type='month',
+  angle=18,
+  paddle=FALSE,
+  ws.int=5,
+  breaks=6,
+  key.footer='mph')
+
+```
+
+
+Visually we can observe that the months of August and October look like the weakest. The winter months seem to have the highest winds overall. May seems to be a good solid month.
+
+### Daily Summary
+
+The information from the wind rose is a good quick outlook of how to the winds distribute along the year. We have two flaws with this digram:
+
+```{r analysis_cleanup}
+# This section needs to be completely silenced
+rm(df)
+```
 
 ## R Markdown
 
@@ -171,3 +216,8 @@ plot(pressure)
 ```
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+```{r runtime}
+totalRun <- Sys.time() - executionStart
+totalRun
+```
