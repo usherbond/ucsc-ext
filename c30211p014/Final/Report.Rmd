@@ -1,0 +1,127 @@
+---
+title: "Wind Analysis Of Northern Yucatan Coast for Kiteboarding"
+author: "Roque Arcudia, Arshia Razavi, Eda Uysal"
+date: "August 21, 2017"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+## Data
+
+
+```{r data_setup, include=FALSE}
+source('WeatherTest.R')
+```
+
+### Data Sources
+
+```{r location, include=FALSE}
+# Helper vars
+latStr <- loc[1,"lat"]
+lonStr <- loc[1,"lon"]
+```
+
+Data obtained from “Weather Underground” webpage.
+
+Original source is the weather station from the CINVESTAV (Mexican research center), ID `r stationID`, located in Telchac Yucatan. Coordinates are latitude `r latStr` and longitude `r lonStr`
+
+### Summary of the Data
+
+```{r sample_date, include=FALSE}
+# Helper vars
+sampleDate <- "January 15, 2016"
+startYear <- year(startDateStr)
+endYear <- year(endDateStr)
+yearSpan <- 1 + endYear-startYear 
+
+sampleData <- getPWSData(stationID, as.Date(sampleDate,"%B %d, %Y")) %>%
+  select(Time,WindDirection,WindDirectionDegrees,WindSpeedMPH,WindSpeedGustMPH)
+
+rawDataInfo <- getRawData(stationID,startDateStr,"2012/03/31")
+
+```
+
+We analyzed a total of `r yearSpan` years of data from `r startYear` to `r endYear`. The information was obtained from weather underground website giving a single web page summary per day. This is an extract from `r sampleDate`:
+
+```{r sample_data}
+knitr::kable(head(sampleData))
+```
+
+There are many more columns related to pressure, temperature, dew point, etc. but for this analysis we only focused on the following:
+
+_Time_ : the timestamp at which the sample is taken.
+
+_WindDirection_ : Cardinal direction where the wind is coming from. Not really used for analysis but just for display.
+
+_WindDirectionDegrees_ : This is the wind direction in degrees. The cardinal directions map as follow: North is 0, East 90, South 180 and West 270.
+
+_WindSpeedMPH_ : Wind speed measured in miles per hour.
+
+_WindSpeedGustMPH_ : Wind gust measured in miles per hour.
+
+During the period of `r yearSpan` years a total of `r rawDataInfo$records` records were read from the web and `r rawDataInfo$badRecords` were missing from the server. This gives a total of `r nrow(rawDataInfo$data)` measurements to analyze.
+
+This is the summary of the data from the raw data set:
+
+```{r raw_data_summary}
+knitr::kable(summary(rawDataInfo$data))
+```
+
+We could easily spot there are negative values for the 3 columns of interest. Those are impossible values for those columns, further analysis showed that's the way the server reports the NA values. In case of wind direction there is also very big positive values greater than 360. When the wind speed is zero the server sometimes reports the direction as a negative value but when the direction reading is missing it reports it as a very high positive. The maximum numbers for wind speed and gust seem to be on a reasonable range so we consider them good readings.
+
+Finally there are some entries in the data set that have duplicated Time values. They are not exactly duplicated readings since they could have other values in the remaining columns. It looks like sometimes some readings that were intended to happen minutes apart were recorded in the same timestamp. Instead of trying to guess the correct timestamp we simply deleted them, there were only `r sum(duplicated(rawDataInfo$data$Time))` entries in this situation plus future cleanup will minimize the effects of deleting them.
+
+This is a summary of the data cleanup.
+
+Condition                  | Action
+---------------------------|--------------
+WindDirectionDegrees < 0   | Convert to NA
+WindDirectionDegrees > 360 | Convert to NA
+WindSpeedMPH < 0           | Convert to NA
+WindSpeedGustMPH < 0       | Convert to NA
+duplicated(Time)           | Delete
+
+
+
+
+### Temporal Data
+
+The data is a time series which should be indexed by the Time column. The data set doesn’t have any information of the time zone which becomes important for future analysis. We had to force such information to the Time column setting the timezone to "America/Mexico_city"
+
+The minimum difference between readings of the same day is 5 minutes but there are situations when the reading for the next 5 min is not taken or the period shifts. The following table shows the 5 most common intervals in the data set:
+
+```{r interval_info}
+Intervals <- with(rawDataInfo$data,difftime(Time[-1],Time[-length(Time)]))
+tmp <- data.frame(head(sort(table(Intervals),decreasing=TRUE)))
+knitr::kable(tmp)
+#colnames(tmp) <- c("Interval","Frequency")
+#head(sort(table(intervals),decreasing=TRUE),5)
+
+```
+
+
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
