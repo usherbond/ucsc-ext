@@ -399,6 +399,26 @@ computeDailySummary <- function(wholeDF,location,thresHourPeriod ) {
 }
 
 
+computeMontlySummary <- function(dailySummary) {
+#sumarizing by month
+monthySummary <- dailySummary %>%
+#  mutate(month=as.factor(months(date))) %>%
+  mutate(month=(month(date,label=TRUE,abbr=FALSE))) %>%
+#  rename(target=avgDlWindSpeedMPH) %>%
+  rename(target=pseudoWindSpeed) %>%
+  group_by(month) %>%
+  summarise(
+    gteq15=(sum(target>=15,na.rm=TRUE)/n()),
+    gteq20=(sum(target>=20,na.rm=TRUE)/n()),
+    gteq25=(sum(target>=25,na.rm=TRUE)/n()),
+    total=n())
+
+return(monthySummary)
+
+}
+
+
+
 
 # Worked with this one:
 # lon, lat
@@ -454,6 +474,9 @@ calendarPlot(calDF,pollutant="pseudoWindSpeed",annotate='ws', year=2016)
 # The whole period of time:
 #windRose(rename(df,date=Time,ws=WindSpeedMPH,wd=WindDirectionDegrees),cols='heat',angle=10,paddle=FALSE,ws.int=5,breaks=6,key.footer='mph')
 
+monthSum  <- computeMontlySummary(daySum)
+
+if(FALSE) {
 #sumarizing by month
 monthSum <- daySum %>%
 #  mutate(month=as.factor(months(date))) %>%
@@ -466,6 +489,7 @@ monthSum <- daySum %>%
     gteq20=(sum(target>=20,na.rm=TRUE)/n()),
     gteq25=(sum(target>=25,na.rm=TRUE)/n()),
     total=n())
+}
 
 
 #plt <- ggplot(monthSum) + aes(x=month, fill=gteq15) + geom_bar(position="fill") + scale_y_continuous(labels=percent_format())
