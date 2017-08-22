@@ -9,7 +9,11 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+## Motivation
 
+Explain what is kiteboarding
+
+Explain kite sizes and why we separate in 15, 20 and 25 mph
 
 ## Data
 
@@ -101,8 +105,8 @@ The minimum difference between readings of the same day is 5 minutes but there a
 
 ```{r interval_info}
 Intervals <- with(rawDataInfo$data,difftime(Time[-1],Time[-length(Time)]))
-tmp <- data.frame(head(sort(table(Intervals),decreasing=TRUE),5))
-knitr::kable(tmp)
+intFreq <- data.frame(head(sort(table(Intervals),decreasing=TRUE),5))
+knitr::kable(intFreq)
 #colnames(tmp) <- c("Interval","Frequency")
 #head(sort(table(intervals),decreasing=TRUE),5)
 
@@ -137,6 +141,16 @@ intZoo <- interpolateZoo(sampleZoo)
 plot(intZoo$WindSpeedMPH,type="b", main=sprintf("Wind Speed for %s",sampleDate), sub="Interpolated", xlab="Time", ylab="Wind Speed (MPH)")
 
 ```
+
+```{r raw_data_cleanup}
+ls()
+#"computeDailySummary"  "computeMontlySummary" "convertPWSData2Zoo"##  [4] "demoWindRose"         "demoZoo"              #"endDateStr"##  [7] "endYear"              "exploreRawData"       "filteredSampleData"## [10] "getCleanPWSDataRange" #"getPWSData"           "getPWSLocation"## [13] "getPWSMap"            "getPWSZoo"            "getRawData"## [16] #"interpolateZoo"       "Intervals"            "intZoo"## [19] "latStr"               "loc"                  "lonStr"## [22] #"mySplitDate"          "periodLength"         "processDate"## [25] "processDates"         "pseudoDate"           #"rawDataInfo"## [28] "retList"              "sampleData"           "sampleDate"## [31] "sampleZoo"            "startDateStr"   #      "startYear"## [34] "stationID"            "testDate"             "intFreq"## [37] "yearSpan"
+
+rm(rawDataInfo,sampleZoo,intZoo,Intervals,periodLength,pseudoDate,sampleData,intFreq)
+ls()
+```
+
+
 
 ## R Markdown
 
