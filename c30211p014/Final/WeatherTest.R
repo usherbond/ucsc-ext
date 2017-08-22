@@ -1,5 +1,5 @@
 library(lubridate)
-library(weatherData)
+#library(weatherData)
 library(zoo)
 library(dplyr)
 library(openair)
@@ -84,11 +84,47 @@ getPWSZoo <- function(...) {
   return(convertPWSData2Zoo(getPWSData(...)))
 }
 
+#Dummy
+#getDetailedWeather <- function(...) {return(NULL)}
+
+# This function is just intended to be used for the raw data analysis
+getRawData <- function(stationName, startDate, endDate=startDate) {
+
+  dates <- seq(as.Date(startDate), as.Date(endDate), by="days")
+
+  dirStr <- sprintf("weatherc/%s",stationName)
+  fileName <- sprintf("%s_bad_dates.txt",stationName)
+  filePath <- paste(dirStr,fileName,sep="/")
+  #print(filePath)
+  missingNum <- 0
+  # 87 records total
+  if( file.exists(filePath) ) {
+    badDates <- as.Date(readLines(filePath))
+    goodIdx <- !(dates %in% badDates)
+    missingNum <- missingNum + sum(!goodIdx)
+    dates <- dates[goodIdx]
+  }
+
+  #cheating:
+  rec <- lapply(dates,function(x) {
+    tmpdf <- getPWSData(stationName,x)
+    if (is.null(tmpdf)) {return(NULL)}
+    testData <- select(tmpdf, Time, WindDirectionDegrees, WindSpeedMPH, WindSpeedGustMPH)
+    return(testData)
+  })
+  nullRecords <- sum(sapply(rec,is.null))
+  missingNum <- missingNum + nullRecords
+  #print(sprintf("The number of missing day records from %s to %s in %s is %d",
+  #              startDate,endDate,stationName,nullRecords))
+  finalDF <- do.call(rbind,rec)
+  return(list(data=finalDF,records=length(rec),badRecords=missingNum))
+}
+ 
 exploreRawData <- function(stationName, startDate, endDate=startDate) {
   dates <- seq(as.Date(startDate), as.Date(endDate), by="days")
   #cheating:
-  badDates <- as.Date(readLines('bad_dates.txt'))
-  dates <- dates[!(dates %in% badDates)]
+  #badDates <- as.Date(readLines('bad_dates.txt'))
+  #dates <- dates[!(dates %in% badDates)]
   res <- lapply(dates,function(x) {
     tmpdf <- getPWSData(stationName,x)
     if (is.null(tmpdf)) {return(NULL)}
@@ -300,8 +336,8 @@ loc <- matrix(c(-89.3,21.3),nrow=1)
 #df <- getCleanPWSDataRange("IYUCATNT2","2013/04/07","2013/04/07") # DL savings
 #df <- getCleanPWSDataRange("IYUCATNT2","2012/01/01","2013/12/31")
 #df <- getCleanPWSDataRange("IYUCATNT2","2016/01/01","2016/01/01")
-#df <- getCleanPWSDataRange("IYUCATNT2","2012/01/01","2012/01/07") # 2 high winds
-df <- getCleanPWSDataRange("IYUCATNT2","2012/01/01","2016/12/31") #Whole
+df <- getCleanPWSDataRange("IYUCATNT2","2012/01/01","2012/01/07") # 2 high winds
+#df <- getCleanPWSDataRange("IYUCATNT2","2012/01/01","2016/12/31") #Whole
 
 #daySum <- df %>% group_by(date=as.Date(Time,tz=attr(Time,"tzone"))) %>%
 #  filter(Time>sunriset(loc, date, direction="sunrise", POSIXct.out=TRUE)[["time"]])
