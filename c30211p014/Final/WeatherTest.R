@@ -371,7 +371,7 @@ loc <- getPWSLocation(stationID)
 startDateStr <- "2012/01/01"
 endDateStr <- "2016/12/31"
 
-if (TRUE) {
+if (FALSE) {
   
 #df <- getCleanPWSDataRange(stationID,"2012/03/10","2016/03/10")
 #df <- getCleanPWSDataRange(stationID,"2013/04/07","2013/04/07") # DL savings

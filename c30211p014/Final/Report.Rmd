@@ -118,7 +118,25 @@ Since the data set is a temporal series we converted the data to zoo objects in 
 3. Use the operation na.approx on the merged zoo object which will result in approximating the NA values using interpolation between neighboring readings.
 4. Merge again the empty dataset with the merged data set as a natural join. This will eliminate any irregular reading taken outside the 5 min sampling rate.
 
+Let’s take a look at an extract of samples around noon from `r sampleDate`:
 
+
+```{r interpolation_example1}
+pseudoDate <- floor_date(sampleData$Time[1],unit="day")
+filteredSampleData <- sampleData %>%
+  filter(Time>=pseudoDate+dhours(11.5)) %>%
+  filter(Time<=pseudoDate+dhours(13.5))
+sampleZoo <- convertPWSData2Zoo(filteredSampleData)
+plot(sampleZoo$WindSpeedMPH,type="b", main=sprintf("Wind Speed for %s",sampleDate), sub="Extract", xlab="Time", ylab="Wind Speed (MPH)")
+```
+
+The next graph is the same period of time with the interpolated samples added:
+
+```{r interpolation_example2}
+intZoo <- interpolateZoo(sampleZoo)
+plot(intZoo$WindSpeedMPH,type="b", main=sprintf("Wind Speed for %s",sampleDate), sub="Interpolated", xlab="Time", ylab="Wind Speed (MPH)")
+
+```
 
 ## R Markdown
 
