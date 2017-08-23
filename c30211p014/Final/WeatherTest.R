@@ -358,7 +358,7 @@ getPWSMap <- function(stationName) {
   map <- get_map(location="Yucatan",zoom=5)
   plt <- ggmap(map) +
     geom_point(aes(x = lon, y = lat), data = data.frame(loc), alpha = .75, col='red', size=2) +
-    labs(title="Location of sensor", x="", y="")
+    labs(title=paste("Location of Station",stationName), x="", y="")
   return(plt)
 }
 
@@ -485,10 +485,14 @@ if (FALSE) {
 stationID <- "IYUCATNT2"
 loc <- getPWSLocation(stationID)
 #startDateStr <- "2012/01/01"
-startDateStr <- "2012/01/01"
-endDateStr <- "2016/12/31"
+startDateStr <- "2016/01/01"
+endDateStr <- "2016/03/31"
 
 startRunTime <- Sys.time() 
+
+pmap <- getPWSMap(stationID)
+print(pmap)
+
 #df <- getCleanPWSDataRange(stationID,"2012/03/10","2016/03/10")
 #df <- getCleanPWSDataRange(stationID,"2013/04/07","2013/04/07") # DL savings
 #df <- getCleanPWSDataRange(stationID,"2012/01/01","2013/12/31")

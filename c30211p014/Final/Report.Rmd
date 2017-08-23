@@ -47,6 +47,11 @@ Data obtained from “Weather Underground” webpage.
 
 Original source is the weather station from the CINVESTAV (Mexican research center), ID `r stationID`, located in Telchac Yucatan. Coordinates are latitude `r latStr` and longitude `r lonStr`
 
+```{r station_map, echo=FALSE, warning=FALSE, fig.align='center',fig.height=8, fig.width=8}
+pmap <- getPWSMap(stationID)
+print(pmap)
+```
+
 ### Summary of the Data
 
 ```{r sample_date, include=FALSE}
