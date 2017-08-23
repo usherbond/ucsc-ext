@@ -425,7 +425,7 @@ if (TRUE) {
 stationID <- "IYUCATNT2"
 loc <- getPWSLocation(stationID)
 #startDateStr <- "2012/01/01"
-startDateStr <- "2016/01/01"
+startDateStr <- "2015/01/01"
 endDateStr <- "2016/12/31"
 
 startRunTime <- Sys.time() 
@@ -508,12 +508,39 @@ monthSum  <- computeMontlySummary(daySum)
 #plt <- ggplot(monthSum, aes(x=month, y=gteq15)) + geom_bar(fill="yellow",stat='identity',alpha=0.9) 
 #plt <- ggplot(monthSum, aes(x=month)) + geom_bar(y=gteq15,fill="yellow",stat='identity',alpha=0.9) 
 
+if (FALSE){
+  
 plt <- ggplot(NULL, aes(x=month, y=prop)) +
   geom_bar(data=rename(monthSum,prop=gteq15),fill="#FEBF57",stat='identity', width=0.9) +
   geom_bar(data=rename(monthSum,prop=gteq20),fill="#F63923",stat='identity', width=0.7) +
   geom_bar(data=rename(monthSum,prop=gteq25),fill="#800F26",stat='identity', width=0.5) +
   coord_flip()
 print(plt)
+}
+
+startYear <- year(startDateStr)
+endYear <- year(endDateStr)
+if (startYear > endYear) {
+  stop("Start year must not be greater than end year")
+}
+pltTitle <- "Windy days per month"
+if (startYear == endYear) {
+  pltTitle <- paste(pltTitle,sprintf("in %d",startYear))
+} else {
+  pltTitle <- paste(pltTitle,sprintf("from %d to %d",startYear,endYear))
+}
+plt <- ggplot(monthSum, aes(x=month)) +
+  geom_bar(aes(fill="15+ mph",y=gteq15),stat='identity', width=0.9) +
+  geom_bar(aes(fill="20+ mph",y=gteq20),stat='identity', width=0.7) +
+  geom_bar(aes(fill="25+ mph",y=gteq25),stat='identity', width=0.5) +
+  scale_fill_manual("Wind", breaks = c("15+ mph", "20+ mph", "25+ mph"),values = c("#FEBF57", "#F63923", "#800F26")) +
+  scale_y_continuous(name="Windy Days (%)", breaks=c(1:10)/10,labels= function(x){return(sprintf("%d%%",x*100))}) +
+  labs(title=pltTitle, x="Month") +
+  coord_flip()
+#scale_y_continuous(name="Percentage of windy days", labels= function(x){return(sprintf("%d%%",x*100))})
+
+print(plt)
+
 
 #print(df)
 write.csv(df, "test.csv")
