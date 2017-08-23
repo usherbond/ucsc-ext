@@ -29,6 +29,8 @@ startDateStr <- "2012/01/01"
 endDateStr <- "2016/12/31"
 #endDateStr <- "2016/01/31"
 
+sustainedWindTh <- 2
+
 ```
 
 ### Data Sources
@@ -155,7 +157,7 @@ plot(intZoo$WindSpeedMPH,type="b", main=sprintf("Wind Speed for %s",sampleDate),
 ls()
 #"computeDailySummary"  "computeMontlySummary" "convertPWSData2Zoo"##  [4] "demoWindRose"         "demoZoo"              #"endDateStr"##  [7] "endYear"              "exploreRawData"       "filteredSampleData"## [10] "getCleanPWSDataRange" #"getPWSData"           "getPWSLocation"## [13] "getPWSMap"            "getPWSZoo"            "getRawData"## [16] #"interpolateZoo"       "Intervals"            "intZoo"## [19] "latStr"               "loc"                  "lonStr"## [22] #"mySplitDate"          "periodLength"         "processDate"## [25] "processDates"         "pseudoDate"           #"rawDataInfo"## [28] "retList"              "sampleData"           "sampleDate"## [31] "sampleZoo"            "startDateStr"   #      "startYear"## [34] "stationID"            "testDate"             "intFreq"## [37] "yearSpan"
 
-rm(rawDataInfo,sampleZoo,intZoo,Intervals,periodLength,pseudoDate,sampleData,intFreq)
+rm(rawDataInfo,sampleZoo,intZoo,Intervals,periodLength,pseudoDate,intFreq,filteredSampleData)
 ls()
 ```
 
@@ -165,7 +167,7 @@ ls()
 
 ```{r whole_data_set, include=FALSE}
 # This section needs to be completely silenced
-df <- getCleanPWSDataRange(stationID,startDateStr,endDateStr) #Whole
+#df <- getCleanPWSDataRange(stationID,startDateStr,endDateStr) #Whole
 #knitr::kable(df) #Dont print this it is for debug only
 ```
 
@@ -173,6 +175,8 @@ The first analysis done after cleaning the date was to get a windrose diagram to
 
 ```{r wind_rose_whole, echo=FALSE, warning=FALSE, fig.align='center',fig.height=8, fig.width=8}
 # There is a warning comming from this function
+if (FALSE) {
+  
 windRose(
   rename(df,ws=WindSpeedMPH,wd=WindDirectionDegrees,date=Time),
   cols='heat',
@@ -182,16 +186,47 @@ windRose(
   ws.int=5,
   breaks=6,
   key.footer='mph')
+}
 
 ```
-
 
 Visually we can observe that the months of August and October look like the weakest. The winter months seem to have the highest winds overall. May seems to be a good solid month.
 
 ### Daily Summary
 
-The information from the wind rose is a good quick outlook of how to the winds distribute along the year. We have two flaws with this digram:
+The information from the wind rose is a good quick outlook of how to the winds distribute along the year. 
 
+TODO : describe the motivation of going beyond
+
+Kiteboarding is only practice during daytime, we removed the measurements that were taken (or interpolated) at times when there was no sunlight. The sunset and sunrise times are calculated for each day using the `sunriset` function from `maptools`.
+
+This is a summary of the computations performed using the column name in the final data frame:
+
+_avgDlWindSpeedMPH, avgDlWindDirectionDegrees_ : This is the average wind speed and direction during the daylight. The averages are not relevant for the final report but they provided a way to do early estimation. 
+
+_periodLength15, periodLength20, periodLength25_ : These are the most important measurements. We look for the amount of time the wind speed was equal or greater than 15, 20 and 25 mph respectively. A time range is only good if we have at least `r sustainedWindTh` hours of contiguous wind over the desired speed otherwise the time is not counted (becomes zero). If there are multiple periods going over the XXX hours threshold then they are added together. Lets use again the example of `r sampleDate`:
+
+```{r windmeasurements}
+
+# Doing the zoo of the whole thing:
+sampleZoo <- convertPWSData2Zoo(sampleData)
+sampleZoo <- interpolateZoo(sampleZoo)
+plot(sampleZoo$WindSpeedMPH,type="l", main=sprintf("Wind Speed for %s",sampleDate), xlab="Time", ylab="Wind Speed (MPH)")
+
+abline(h=15,lty="dotted")
+abline(h=20,lty="dotted")
+abline(h=25,lty="dotted")
+
+rm(sampleZoo)
+```
+
+This one contains period of times where the wind speed is sustained for more than `r sustainedWindTh` hours being equal or greater than the three thresholds. Non zero values will be captured in the three of them.
+
+_pseudoWindSpeed_ : We capture here the highest sustained speed above the predefined thresholds. In the previous graph for `r sampleDate` this field will have 25 since there is a period of time that the wind blows for more than XXX hours at 25 mph or more.
+
+_avgDlWindSpeedMPHGt15, avgDlWindDirectionDegreesGt15_ : These are the average wind speed and direction of all the measurements greater than 15 mph. Only calculated when there was at least a period of `r sustainedWindTh` hours when the wind blows above 15 mph (periodLength15>0) otherwise they are NA. This measurements are useful for the arrow in the calendar plot.
+
+Cleanup
 ```{r analysis_cleanup}
 # This section needs to be completely silenced
 rm(df)
