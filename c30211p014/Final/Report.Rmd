@@ -2,7 +2,9 @@
 title: "Wind Analysis Of Northern Yucatan Coast for Kiteboarding"
 author: "Roque Arcudia, Arshia Razavi, Eda Uysal"
 date: "August 21, 2017"
-output: pdf_document
+output:
+  html_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -157,7 +159,7 @@ plot(intZoo$WindSpeedMPH,type="b", main=sprintf("Wind Speed for %s",sampleDate),
 ls()
 #"computeDailySummary"  "computeMontlySummary" "convertPWSData2Zoo"##  [4] "demoWindRose"         "demoZoo"              #"endDateStr"##  [7] "endYear"              "exploreRawData"       "filteredSampleData"## [10] "getCleanPWSDataRange" #"getPWSData"           "getPWSLocation"## [13] "getPWSMap"            "getPWSZoo"            "getRawData"## [16] #"interpolateZoo"       "Intervals"            "intZoo"## [19] "latStr"               "loc"                  "lonStr"## [22] #"mySplitDate"          "periodLength"         "processDate"## [25] "processDates"         "pseudoDate"           #"rawDataInfo"## [28] "retList"              "sampleData"           "sampleDate"## [31] "sampleZoo"            "startDateStr"   #      "startYear"## [34] "stationID"            "testDate"             "intFreq"## [37] "yearSpan"
 
-rm(rawDataInfo,sampleZoo,intZoo,Intervals,periodLength,pseudoDate,intFreq,filteredSampleData)
+rm(rawDataInfo,sampleZoo,intZoo,Intervals,pseudoDate,intFreq,filteredSampleData)
 ls()
 ```
 
@@ -167,7 +169,7 @@ ls()
 
 ```{r whole_data_set, include=FALSE}
 # This section needs to be completely silenced
-#df <- getCleanPWSDataRange(stationID,startDateStr,endDateStr) #Whole
+df <- getCleanPWSDataRange(stationID,startDateStr,endDateStr) #Whole
 #knitr::kable(df) #Dont print this it is for debug only
 ```
 
@@ -193,6 +195,9 @@ windRose(
 Visually we can observe that the months of August and October look like the weakest. The winter months seem to have the highest winds overall. May seems to be a good solid month.
 
 ### Daily Summary
+```{r daily_summary}
+daySum <- computeDailySummary(df,loc,sustainedWindTh)
+```
 
 The information from the wind rose is a good quick outlook of how to the winds distribute along the year. 
 
@@ -225,6 +230,27 @@ This one contains period of times where the wind speed is sustained for more tha
 _pseudoWindSpeed_ : We capture here the highest sustained speed above the predefined thresholds. In the previous graph for `r sampleDate` this field will have 25 since there is a period of time that the wind blows for more than XXX hours at 25 mph or more.
 
 _avgDlWindSpeedMPHGt15, avgDlWindDirectionDegreesGt15_ : These are the average wind speed and direction of all the measurements greater than 15 mph. Only calculated when there was at least a period of `r sustainedWindTh` hours when the wind blows above 15 mph (periodLength15>0) otherwise they are NA. This measurements are useful for the arrow in the calendar plot.
+
+
+```{r calendar_last_year, echo=FALSE, warning=FALSE, fig.align='center',fig.height=8, fig.width=8}
+
+calDF <- daySum %>%
+  rename(wd=avgDlWindDirectionDegreesGt15) %>%
+  mutate(ws=avgDlWindSpeedMPHGt15)
+
+targetDate <- year(endDateStr)
+
+calendarPlot(
+  calDF,
+  pollutant="pseudoWindSpeed",
+  annotate='ws',
+  year=targetDate,
+  breaks=c(0,14,19,24,100),
+  labels=c("Poor wind","Low [15,20) mph","Mid [20,25) mph","High 25mph+"),
+  main=sprintf("Kiting days in %s",targetDate)
+)
+
+```
 
 Cleanup
 ```{r analysis_cleanup}
