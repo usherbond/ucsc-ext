@@ -478,7 +478,7 @@ windRose(
 
 
 
-if (TRUE) {
+if (FALSE) {
 # Worked with this one:
 # lon, lat
 #loc <- matrix(c(-89.3,21.3),nrow=1)

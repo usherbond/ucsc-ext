@@ -3,21 +3,21 @@ title: "Wind Analysis Of Northern Yucatan Coast for Kiteboarding"
 author: "Roque Arcudia, Arshia Razavi, Eda Uysal"
 date: "August 21, 2017"
 output:
-  html_document: default
   pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## Motivation
+# Motivation
 
 Explain what is kiteboarding
 
 Explain kite sizes and why we separate in 15, 20 and 25 mph
 
-## Data
+# Data
 
 
 ```{r data_setup, include=FALSE}
@@ -35,7 +35,7 @@ sustainedWindTh <- 2
 
 ```
 
-### Data Sources
+## Data Sources
 
 ```{r location, include=FALSE}
 # Helper vars
@@ -62,8 +62,8 @@ sampleData <- getPWSData(stationID, as.Date(sampleDate,"%B %d, %Y")) %>%
   select(Time,WindDirection,WindDirectionDegrees,WindSpeedMPH,WindSpeedGustMPH)
 
 #TODO : use real start and end
-#rawDataInfo <- getRawData(stationID,startDateStr,endDateStr)
-rawDataInfo <- getRawData(stationID,"2012/01/01","2012/03/31")
+rawDataInfo <- getRawData(stationID,startDateStr,endDateStr)
+#rawDataInfo <- getRawData(stationID,"2012/01/01","2012/03/31")
 
 ```
 
@@ -110,7 +110,7 @@ duplicated(Time)           | Delete
 
 
 
-### Temporal Data
+## Temporal Data
 
 The data is a time series which should be indexed by the Time column. The data set doesn’t have any information of the time zone which becomes important for future analysis. We had to force such information to the Time column setting the timezone to "America/Mexico_city"
 
@@ -155,7 +155,7 @@ plot(intZoo$WindSpeedMPH,type="b", main=sprintf("Wind Speed for %s",sampleDate),
 
 ```
 
-```{r raw_data_cleanup}
+```{r raw_data_cleanup, include=TRUE}
 ls()
 #"computeDailySummary"  "computeMontlySummary" "convertPWSData2Zoo"##  [4] "demoWindRose"         "demoZoo"              #"endDateStr"##  [7] "endYear"              "exploreRawData"       "filteredSampleData"## [10] "getCleanPWSDataRange" #"getPWSData"           "getPWSLocation"## [13] "getPWSMap"            "getPWSZoo"            "getRawData"## [16] #"interpolateZoo"       "Intervals"            "intZoo"## [19] "latStr"               "loc"                  "lonStr"## [22] #"mySplitDate"          "periodLength"         "processDate"## [25] "processDates"         "pseudoDate"           #"rawDataInfo"## [28] "retList"              "sampleData"           "sampleDate"## [31] "sampleZoo"            "startDateStr"   #      "startYear"## [34] "stationID"            "testDate"             "intFreq"## [37] "yearSpan"
 
@@ -163,9 +163,9 @@ rm(rawDataInfo,sampleZoo,intZoo,Intervals,pseudoDate,intFreq,filteredSampleData)
 ls()
 ```
 
-## Analysis
+# Analysis
 
-### Whole Data Set Analysis
+## Whole Data Set Analysis
 
 ```{r whole_data_set, include=FALSE}
 # This section needs to be completely silenced
@@ -177,24 +177,13 @@ The first analysis done after cleaning the date was to get a windrose diagram to
 
 ```{r wind_rose_whole, echo=FALSE, warning=FALSE, fig.align='center',fig.height=8, fig.width=8}
 # There is a warning comming from this function
-if (FALSE) {
-  
-windRose(
-  rename(df,ws=WindSpeedMPH,wd=WindDirectionDegrees,date=Time),
-  cols='heat',
-  type='month',
-  angle=18,
-  paddle=FALSE,
-  ws.int=5,
-  breaks=6,
-  key.footer='mph')
-}
+windRoseCleanData(df)
 
 ```
 
 Visually we can observe that the months of August and October look like the weakest. The winter months seem to have the highest winds overall. May seems to be a good solid month.
 
-### Daily Summary
+## Daily Summary
 ```{r daily_summary}
 daySum <- computeDailySummary(df,loc,sustainedWindTh)
 ```
@@ -231,26 +220,21 @@ _pseudoWindSpeed_ : We capture here the highest sustained speed above the predef
 
 _avgDlWindSpeedMPHGt15, avgDlWindDirectionDegreesGt15_ : These are the average wind speed and direction of all the measurements greater than 15 mph. Only calculated when there was at least a period of `r sustainedWindTh` hours when the wind blows above 15 mph (periodLength15>0) otherwise they are NA. This measurements are useful for the arrow in the calendar plot.
 
+### Calendar Plot for windy days
+
+With this information we created a calendar plot where each day is classified into a no wind day, low wind, middle wind or high wind day based on the ranges of 15mph, 20mpg or 25mph and beyond. This is based again on the criteria of sustained wind for at least XX hours.
+
+Whenever there is a windy day (>15mph) then we also get an arrow indicating the average wind direction of the windy range, this information comes from columns _avgDlWindSpeedMPHGt15_ and _avgDlWindDirectionDegreesGt15_. For this report only the last year is printed.
+
 
 ```{r calendar_last_year, echo=FALSE, warning=FALSE, fig.align='center',fig.height=8, fig.width=8}
 
-calDF <- daySum %>%
-  rename(wd=avgDlWindDirectionDegreesGt15) %>%
-  mutate(ws=avgDlWindSpeedMPHGt15)
-
 targetDate <- year(endDateStr)
-
-calendarPlot(
-  calDF,
-  pollutant="pseudoWindSpeed",
-  annotate='ws',
-  year=targetDate,
-  breaks=c(0,14,19,24,100),
-  labels=c("Poor wind","Low [15,20) mph","Mid [20,25) mph","High 25mph+"),
-  main=sprintf("Kiting days in %s",targetDate)
-)
+calendarDailySummary(daySum,targetDate)
 
 ```
+
+
 
 Cleanup
 ```{r analysis_cleanup}
@@ -258,25 +242,36 @@ Cleanup
 rm(df)
 ```
 
+## Monthly Report
+```{r monthly_summary}
+monthSum  <- computeMontlySummary(daySum)
+
+```
+
+Finally we process the daily information to find out how many windy days we have had in the historic data per month.
+
+```{r monthly_plot}
+plt <- ggplotMontlySummary(monthSum,startDateStr,endDateStr)
+print(plt)
+```
+
+# Conclusions
+
+Write something.
+
+# Appendix
+
 ## R Markdown
 
 This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
 
 When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
 
-```{r cars}
-summary(cars)
-```
-
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
+## Remaining calendar plots
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+## Runtime
 
 ```{r runtime}
 totalRun <- Sys.time() - executionStart
