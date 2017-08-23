@@ -479,7 +479,23 @@ calDF <- daySum %>%
   mutate(ws=avgDlWindSpeedMPHGt15)
 # There is some issue with the calendar and the type of object from dplyr
 #calendarPlot(calDF,pollutant="avgDlWindSpeedMPH",annotate='value')
-calendarPlot(calDF,pollutant="pseudoWindSpeed",annotate='ws', year=2016)
+#calendarPlot(calDF,pollutant="pseudoWindSpeed",annotate='ws', year=year(endDateStr) )
+
+targetDate <- year(endDateStr)
+
+calendarPlot(
+  calDF,
+  pollutant="pseudoWindSpeed",
+  annotate='ws',
+  year=targetDate,
+  breaks=c(0,14,19,24,100),
+  labels=c("Poor wind","Low [15,20) mph","Mid [20,25) mph","High 25mph+"),
+  main=sprintf("Kiting days in %s",targetDate)
+)
+#sprintf("Kiting days in %s",targetDate)
+
+#print(year(endDateStr))
+
 #calendarPlot(calDF,pollutant="pseudoWindSpeed", year=2016)
 
 # The whole period of time:
@@ -493,9 +509,9 @@ monthSum  <- computeMontlySummary(daySum)
 #plt <- ggplot(monthSum, aes(x=month)) + geom_bar(y=gteq15,fill="yellow",stat='identity',alpha=0.9) 
 
 plt <- ggplot(NULL, aes(x=month, y=prop)) +
-  geom_bar(data=rename(monthSum,prop=gteq15),fill="yellow",stat='identity', width=0.9) +
-  geom_bar(data=rename(monthSum,prop=gteq20),fill="orange",stat='identity', width=0.7) +
-  geom_bar(data=rename(monthSum,prop=gteq25),fill="red",stat='identity', width=0.5) +
+  geom_bar(data=rename(monthSum,prop=gteq15),fill="#FEBF57",stat='identity', width=0.9) +
+  geom_bar(data=rename(monthSum,prop=gteq20),fill="#F63923",stat='identity', width=0.7) +
+  geom_bar(data=rename(monthSum,prop=gteq25),fill="#800F26",stat='identity', width=0.5) +
   coord_flip()
 print(plt)
 
