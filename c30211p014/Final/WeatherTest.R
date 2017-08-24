@@ -417,61 +417,58 @@ computeMontlySummary <- function(dailySummary) {
 
 
 calendarDailySummary <- function(dailySummary, targetYear) {
-calDF <- dailySummary %>%
-  rename(wd=avgDlWindDirectionDegreesGt15) %>%
-  mutate(ws=avgDlWindSpeedMPHGt15)
-# There is some issue with the calendar and the type of object from dplyr
-#calendarPlot(calDF,pollutant="avgDlWindSpeedMPH",annotate='value')
-#calendarPlot(calDF,pollutant="pseudoWindSpeed",annotate='ws', year=year(endDateStr) )
+  calDF <- dailySummary %>%
+    rename(wd=avgDlWindDirectionDegreesGt15) %>%
+    mutate(ws=avgDlWindSpeedMPHGt15)
+  # There is some issue with the calendar and the type of object from dplyr
 
-
-calendarPlot(
-  calDF,
-  pollutant="pseudoWindSpeed",
-  annotate='ws',
-  year=targetYear,
-  breaks=c(0,14,19,24,100),
-  labels=c("Poor wind","Low [15,20) mph","Mid [20,25) mph","High 25mph+"),
-  main=sprintf("Kiting days in %s",targetDate)
-)
+  calendarPlot(
+    calDF,
+    pollutant="pseudoWindSpeed",
+    annotate='ws',
+    year=targetYear,
+    breaks=c(0,14,19,24,100),
+    labels=c("Poor wind","Low [15,20) mph","Mid [20,25) mph","High 25mph+"),
+    main=sprintf("Kiting days in %s",targetDate)
+  )
 }
 
 
 
 ggplotMontlySummary <- function(monthlySummary,startDateString,endDateString) {
-startYear <- year(startDateString)
-endYear <- year(endDateString)
-if (startYear > endYear) {
-  stop("Start year must not be greater than end year")
-}
-pltTitle <- "Windy days per month"
-if (startYear == endYear) {
-  pltTitle <- paste(pltTitle,sprintf("in %d",startYear))
-} else {
-  pltTitle <- paste(pltTitle,sprintf("from %d to %d",startYear,endYear))
-}
-plt <- ggplot(monthlySummary, aes(x=month)) +
-  geom_bar(aes(fill="15+ mph",y=gteq15),stat='identity', width=0.9) +
-  geom_bar(aes(fill="20+ mph",y=gteq20),stat='identity', width=0.7) +
-  geom_bar(aes(fill="25+ mph",y=gteq25),stat='identity', width=0.5) +
-  scale_fill_manual("Wind", breaks = c("15+ mph", "20+ mph", "25+ mph"),values = c("#FEBF57", "#F63923", "#800F26")) +
-  scale_y_continuous(name="Windy Days (%)", breaks=c(1:10)/10,labels= function(x){return(sprintf("%d%%",x*100))}) +
-  labs(title=pltTitle, x="Month") +
-  coord_flip()
+  startYear <- year(startDateString)
+  endYear <- year(endDateString)
+  if (startYear > endYear) {
+    stop("Start year must not be greater than end year")
+  }
+  pltTitle <- "Windy days per month"
+  if (startYear == endYear) {
+    pltTitle <- paste(pltTitle,sprintf("in %d",startYear))
+  } else {
+    pltTitle <- paste(pltTitle,sprintf("from %d to %d",startYear,endYear))
+  }
+  plt <- ggplot(monthlySummary, aes(x=month)) +
+    geom_bar(aes(fill="15+ mph",y=gteq15),stat='identity', width=0.9) +
+    geom_bar(aes(fill="20+ mph",y=gteq20),stat='identity', width=0.7) +
+    geom_bar(aes(fill="25+ mph",y=gteq25),stat='identity', width=0.5) +
+    scale_fill_manual("Wind", breaks = c("15+ mph", "20+ mph", "25+ mph"),values = c("#FEBF57", "#F63923", "#800F26")) +
+    scale_y_continuous(name="Windy Days (%)", breaks=c(1:10)/10,labels= function(x){return(sprintf("%d%%",x*100))}) +
+    labs(title=pltTitle, x="Month") +
+    coord_flip()
 
-return(plt)
+  return(plt)
 }
 
 windRoseCleanData <- function(cleanData) {
-windRose(
-  rename(cleanData,ws=WindSpeedMPH,wd=WindDirectionDegrees,date=Time),
-  cols='heat',
-  type='month',
-  angle=18,
-  paddle=FALSE,
-  ws.int=5,
-  breaks=6,
-  key.footer='mph')
+  windRose(
+    rename(cleanData,ws=WindSpeedMPH,wd=WindDirectionDegrees,date=Time),
+    cols='heat',
+    type='month',
+    angle=18,
+    paddle=FALSE,
+    ws.int=5,
+    breaks=6,
+    key.footer='mph')
 }
 
 
