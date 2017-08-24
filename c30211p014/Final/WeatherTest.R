@@ -478,39 +478,23 @@ windRose(
 
 
 
-if (FALSE) {
+if (TRUE) {
 # Worked with this one:
 # lon, lat
 #loc <- matrix(c(-89.3,21.3),nrow=1)
 stationID <- "IYUCATNT2"
 loc <- getPWSLocation(stationID)
 #startDateStr <- "2012/01/01"
-startDateStr <- "2016/01/01"
-endDateStr <- "2016/03/31"
+startDateStr <- "2012/01/01"
+endDateStr <- "2016/12/31"
 
 startRunTime <- Sys.time() 
 
-pmap <- getPWSMap(stationID)
-print(pmap)
-
-#df <- getCleanPWSDataRange(stationID,"2012/03/10","2016/03/10")
-#df <- getCleanPWSDataRange(stationID,"2013/04/07","2013/04/07") # DL savings
-#df <- getCleanPWSDataRange(stationID,"2012/01/01","2013/12/31")
-#df <- getCleanPWSDataRange(stationID,"2016/01/01","2016/01/01")
-#df <- getCleanPWSDataRange(stationID,"2012/01/01","2012/01/07") # 2 high winds
-#df <- getCleanPWSDataRange(stationID,"2014/01/01","2014/12/31") #2014
-#df <- getCleanPWSDataRange(stationID,"2012/01/01","2016/12/31") #Whole
+#pmap <- getPWSMap(stationID)
+#print(pmap)
 
 df <- getCleanPWSDataRange(stationID,startDateStr,endDateStr) #Whole
 windRoseCleanData(df)
-
-#  ws="WindSpeedMPH",wd="WindDirectionDegrees")
-print("DONE")
-
-
-#daySum <- df %>% group_by(date=as.Date(Time,tz=attr(Time,"tzone"))) %>%
-#  filter(Time>sunriset(loc, date, direction="sunrise", POSIXct.out=TRUE)[["time"]])
-#%>% summarise(num=n())
 
 # Debug timezone comparison
 #tmp <- df %>% group_by(date=floor_date(Time,unit="day")) %>%
@@ -528,9 +512,6 @@ daySum <- computeDailySummary(df,loc,2)
 #    avgDlWindDirectionDegreesGt15=mean(WindDirectionDegrees,na.rm=TRUE)
 #  )
 
-#aboveAvg=ifelse(n()>0,mean(WindSpeedMPH),0))
-
-#windRose(daySum,ws="avgDlWindSpeedMPH",wd="avgDlWindDirectionDegrees",cols='heat',angle=10,paddle=FALSE,ws.int=5,breaks=6,key.footer='mph')
 
 targetDate <- year(endDateStr)
 calendarDailySummary(daySum,targetDate)
@@ -545,11 +526,6 @@ calendarDailySummary(daySum,targetDate)
 #windRose(rename(df,date=Time,ws=WindSpeedMPH,wd=WindDirectionDegrees),cols='heat',angle=10,paddle=FALSE,ws.int=5,breaks=6,key.footer='mph')
 
 monthSum  <- computeMontlySummary(daySum)
-
-#plt <- ggplot(monthSum) + aes(x=month, fill=gteq15) + geom_bar(position="fill") + scale_y_continuous(labels=percent_format())
-#plt <- ggplot(monthSum, aes(x=month, y=gteq15*100, fill = variable)) + geom_bar(stat = 'identity')
-#plt <- ggplot(monthSum, aes(x=month, y=gteq15)) + geom_bar(fill="yellow",stat='identity',alpha=0.9) 
-#plt <- ggplot(monthSum, aes(x=month)) + geom_bar(y=gteq15,fill="yellow",stat='identity',alpha=0.9) 
 
 plt <- ggplotMontlySummary(monthSum,startDateStr,endDateStr)
 print(plt)
