@@ -35,7 +35,18 @@ sampleData <- getPWSData(stationID, as.Date(sampleDate,"%B %d, %Y")) %>%
 rawDataInfo <- getRawData(stationID,startDateStr,endDateStr)
 
 ```
-## Maps
+
+## Introduction
+
+![Northern Yucatan Coast](playon.jpg)
+
+https://youtu.be/v7-fZ8MjRwA
+
+## Motivation
+
+- Find the best windy days
+
+## Data Sources
 
 ```{r station_map, echo=FALSE, message=FALSE, warning=FALSE, fig.align='center',fig.height=7, fig.width=7}
 pmap <- getPWSMap(stationID)
@@ -46,11 +57,13 @@ Some thing about maps
 ## Data Summary
 
 ```{r sample_data , fig.align = 'center'}
-knitr::kable(head(sampleData,3))
+knitr::kable(head(sampleData,5),"latex",booktabs = TRUE) %>%
+  kableExtra::kable_styling(latex_options = "scale_down")
 ```
 
 ```{r summary_data , fig.align = 'center' }
-knitr::kable(summary(rawDataInfo$data))
+knitr::kable(summary(rawDataInfo$data),"latex",booktabs = TRUE) %>%
+  kableExtra::kable_styling(latex_options = "scale_down")
 ```
 
 ## Data Cleanup
@@ -76,8 +89,6 @@ plot(sampleZoo$WindSpeedMPH,type="b", main=sprintf("Wind Speed for %s",sampleDat
 ```
 
 ## Interpolated Data
-
-This graph is the same period of time with the interpolated samples added:
 
 ```{r interpolation_example2}
 intZoo <- interpolateZoo(sampleZoo)
@@ -139,9 +150,10 @@ print(plt)
 
 ## Conclusion
 
-- Best wind days are during MAY (Almost 90%)
+- Best wind days are during May (Almost 90%)
 - Second Best are April & March
 - Highest winds were in March
-- Safe bet to take a meduim(9m) & large(12m) kites 
+- Safe bet to take a medium (9m) & large (12m) kites 
+
 
 
