@@ -3,7 +3,9 @@ title: "Wind Analysis Of Northern Yucatan Coast for Kiteboarding"
 author: "Roque Arcudia, Arshia Razavi, Eda Uysal"
 date: "August 23, 2017"
 output:
-  beamer_presentation: default
+  beamer_presentation:
+    theme : "CambridgeUS"
+    colortheme: "crane"
   slidy_presentation: default
 ---
 
@@ -36,15 +38,23 @@ rawDataInfo <- getRawData(stationID,startDateStr,endDateStr)
 
 ```
 
-## Introduction
+## Introduction https://youtu.be/v7-fZ8MjRwA
 
 ![Northern Yucatan Coast](playon.jpg)
 
-https://youtu.be/v7-fZ8MjRwA
+
 
 ## Motivation
 
-- Find the best windy days
+- Find the windiest season in the northern Yucatan shore
+
+- Categorize according to wind ranges suitable for small, medium and large kites
+
+- Use `r yearSpan` years of wind data from `r startYear` to `r endYear`
+
+- CINVESTAV Telchac (`r stationID`) weather station data is used
+
+- Information is gathered from the web using Weather Underground website
 
 ## Data Sources
 
@@ -52,22 +62,22 @@ https://youtu.be/v7-fZ8MjRwA
 pmap <- getPWSMap(stationID)
 print(pmap)
 ```
-Some thing about maps
 
 ## Data Summary
 
-```{r sample_data , fig.align = 'center'}
+Records read: `r rawDataInfo$records`, Missing: `r rawDataInfo$badRecords`, Readings: `r nrow(rawDataInfo$data)`
+
+```{r sample_data}
 knitr::kable(head(sampleData,5),"latex",booktabs = TRUE) %>%
   kableExtra::kable_styling(latex_options = "scale_down")
 ```
 
-```{r summary_data , fig.align = 'center' }
+```{r summary_data}
 knitr::kable(summary(rawDataInfo$data),"latex",booktabs = TRUE) %>%
   kableExtra::kable_styling(latex_options = "scale_down")
 ```
 
 ## Data Cleanup
-This is a summary of the data cleanup.
 
 Condition                  | Action
 ---------------------------|--------------
@@ -96,15 +106,13 @@ plot(intZoo$WindSpeedMPH,type="b", main=sprintf("Wind Speed for %s",sampleDate),
 
 ```
 
-## Complete Clean Data 
-
+## Clean Data Wind Rose
 
 ```{r whole_data_set, include=FALSE}
 # This section needs to be completely silenced
 df <- getCleanPWSDataRange(stationID,startDateStr,endDateStr) #Whole
 #knitr::kable(df) #Dont print this it is for debug only
 ```
-
 
 ```{r wind_rose_whole, echo=FALSE, warning=FALSE, fig.align='center',fig.height=6, fig.width=8}
 # There is a warning comming from this function
@@ -114,7 +122,7 @@ windRoseCleanData(df)
 
 ## Daily Summary
 
-```{r daily_summary ,echo = FALSE}
+```{r daily_summary ,echo = FALSE,fig.align='center',fig.height=3,fig.width=8}
 daySum <- computeDailySummary(df,loc,sustainedWindTh)
 
 
@@ -130,7 +138,12 @@ abline(h=25,lty="dotted")
 rm(sampleZoo)
 ```
 
-## Daily Summary
+- Only daylight readings are taken into account
+- At least `r sustainedWindTh` hours of consistent wind required
+- Label a day according to its highest sustained wind
+- If the day is good get the average speed and direction of the windy period
+
+## Calendar Plot
 
 ```{r calendar_last_year, echo=FALSE, warning=FALSE, fig.align='center',fig.height=6, fig.width=8}
 
