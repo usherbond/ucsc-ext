@@ -1,0 +1,147 @@
+---
+title: "Wind Analysis Of Northern Yucatan Coast for Kiteboarding"
+author: "Roque Arcudia, Arshia Razavi, Eda Uysal"
+date: "August 23, 2017"
+output:
+  beamer_presentation: default
+  slidy_presentation: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+
+executionStart <- Sys.time()
+source('WeatherTest.R')
+# General variables:
+stationID <- "IYUCATNT2"
+loc <- getPWSLocation(stationID)
+#startDateStr <- "2012/01/01"
+startDateStr <- "2016/01/01"
+endDateStr <- "2016/12/31"
+#endDateStr <- "2016/01/31"
+
+sustainedWindTh <- 2
+
+sampleDate <- "April 18, 2016"
+
+startYear <- year(startDateStr)
+endYear <- year(endDateStr)
+yearSpan <- 1 + endYear-startYear 
+
+sampleData <- getPWSData(stationID, as.Date(sampleDate,"%B %d, %Y")) %>%
+  select(Time,WindDirection,WindDirectionDegrees,WindSpeedMPH,WindSpeedGustMPH)
+
+#TODO : use real start and end
+rawDataInfo <- getRawData(stationID,startDateStr,endDateStr)
+
+```
+## Maps
+
+```{r station_map, echo=FALSE, message=FALSE, warning=FALSE, fig.align='center',fig.height=7, fig.width=7}
+pmap <- getPWSMap(stationID)
+print(pmap)
+```
+Some thing about maps
+
+## Data Summary
+
+```{r sample_data , fig.align = 'center'}
+knitr::kable(head(sampleData,3))
+```
+
+```{r summary_data , fig.align = 'center' }
+knitr::kable(summary(rawDataInfo$data))
+```
+
+## Data Cleanup
+This is a summary of the data cleanup.
+
+Condition                  | Action
+---------------------------|--------------
+WindDirectionDegrees < 0   | Convert to NA
+WindDirectionDegrees > 360 | Convert to NA
+WindSpeedMPH < 0           | Convert to NA
+WindSpeedGustMPH < 0       | Convert to NA
+duplicated(Time)           | Delete
+
+## Original Data
+
+```{r interpolation_example1}
+pseudoDate <- floor_date(sampleData$Time[1],unit="day")
+filteredSampleData <- sampleData %>%
+  filter(Time>=pseudoDate+dhours(11.5)) %>%
+  filter(Time<=pseudoDate+dhours(13.5))
+sampleZoo <- convertPWSData2Zoo(filteredSampleData)
+plot(sampleZoo$WindSpeedMPH,type="b", main=sprintf("Wind Speed for %s",sampleDate), sub="Extract", xlab="Time", ylab="Wind Speed (MPH)")
+```
+
+## Interpolated Data
+
+This graph is the same period of time with the interpolated samples added:
+
+```{r interpolation_example2}
+intZoo <- interpolateZoo(sampleZoo)
+plot(intZoo$WindSpeedMPH,type="b", main=sprintf("Wind Speed for %s",sampleDate), sub="Interpolated", xlab="Time", ylab="Wind Speed (MPH)")
+
+```
+
+## Complete Clean Data 
+
+
+```{r whole_data_set, include=FALSE}
+# This section needs to be completely silenced
+df <- getCleanPWSDataRange(stationID,startDateStr,endDateStr) #Whole
+#knitr::kable(df) #Dont print this it is for debug only
+```
+
+
+```{r wind_rose_whole, echo=FALSE, warning=FALSE, fig.align='center',fig.height=6, fig.width=8}
+# There is a warning comming from this function
+windRoseCleanData(df)
+
+```
+
+## Daily Summary
+
+```{r daily_summary ,echo = FALSE}
+daySum <- computeDailySummary(df,loc,sustainedWindTh)
+
+
+# Doing the zoo of the whole thing:
+sampleZoo <- convertPWSData2Zoo(sampleData)
+sampleZoo <- interpolateZoo(sampleZoo)
+plot(sampleZoo$WindSpeedMPH,type="l", main=sprintf("Wind Speed for %s",sampleDate), xlab="Time", ylab="Wind Speed (MPH)")
+
+abline(h=15,lty="dotted")
+abline(h=20,lty="dotted")
+abline(h=25,lty="dotted")
+
+rm(sampleZoo)
+```
+
+## Daily Summary
+
+```{r calendar_last_year, echo=FALSE, warning=FALSE, fig.align='center',fig.height=6, fig.width=8}
+
+targetDate <- year(endDateStr)
+calendarDailySummary(daySum,targetDate)
+
+```
+
+## Monthly Report
+
+```{r monthly_summary ,echo = FALSE}
+monthSum  <- computeMontlySummary(daySum)
+
+plt <- ggplotMontlySummary(monthSum,startDateStr,endDateStr)
+print(plt)
+```
+
+## Conclusion
+
+- Best wind days are during MAY (Almost 90%)
+- Second Best are April & March
+- Highest winds were in March
+- Safe bet to take a meduim(9m) & large(12m) kites 
+
+
