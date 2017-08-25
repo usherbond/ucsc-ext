@@ -1,0 +1,120 @@
+---
+title: "Assignment 4"
+author: "Roque Arcudia"
+date: "August 25, 2017"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+**Take the Boston Housing Data.**
+
+```{r import_data}
+library(MASS)
+data(Boston)
+knitr::kable(head(Boston))
+```
+
+**We want to predict median house price. Select the features from the given.**
+
+Calculating the correlation of the features vs median house price
+
+```{r correlation}
+
+corBos <- cor(Boston)
+# All cols except mediam value
+indBosColNamesIdx <- colnames(corBos)!="medv"
+indBosColNamesIdx
+
+corMedv <- corBos["medv",indBosColNamesIdx]
+```
+
+**Arrange the features in the order of their imporance.**
+
+Arranging by absolute value of correlation closer to 1
+
+```{r order_importance}
+sort(abs(corMedv))
+orderCorMedv <- order(-abs(corMedv))
+knitr::kable(corMedv[orderCorMedv])
+```
+
+**Divide the data into training and testing.  Fit a linear model.**
+
+```{r sample_training}
+#subBoston <- head(Boston,100)
+subBoston <- Boston
+
+#knitr::kable(subBoston)
+numEntries <- nrow(subBoston)
+numEntries
+set.seed(1)
+# Selectiong 80% of the dataset for training
+trainingSamp <- sample(c(1:numEntries),0.8*numEntries,replace=FALSE)
+# which not required but easier to visialize
+testingSamp <- which(!(c(1:numEntries) %in% trainingSamp))
+
+#trainingSamp
+#testingSamp
+
+trainingSet <- subBoston[trainingSamp,]
+testingSet <- subBoston[testingSamp,]
+
+#knitr::kable(trainingSet)
+#knitr::kable(testingSet)
+
+indTrainingSet <- trainingSet[,colnames(trainingSet) != "medv"]
+#knitr::kable(indTrainingSet)
+
+bostonModel <- lm(medv~.,data=trainingSet)
+
+summary(bostonModel)
+
+#attributes(bostonModel$terms)
+#attr(bostonModel$terms,"term.labels")
+
+vals <- predict(bostonModel,testingSet[,attr(bostonModel$terms,"term.labels")])
+#vals
+
+testingSetPred <- data.frame(testingSet,predicted=vals)
+knitr::kable(testingSetPred)
+
+
+```
+
+**Plot the predicted values of the test data.**
+
+This is multivariable so just plotting the predicted value vs the actual medv
+
+```{r fit_plot}
+#plot(bostonModel)
+
+with(testingSetPred, plot(medv,predicted))
+abline(a=0,b=1,col="red")
+
+```
+
+**Changed the submission data**
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
