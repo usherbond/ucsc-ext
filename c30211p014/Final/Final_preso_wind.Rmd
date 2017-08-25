@@ -17,8 +17,8 @@ source('WeatherTest.R')
 # General variables:
 stationID <- "IYUCATNT2"
 loc <- getPWSLocation(stationID)
-#startDateStr <- "2012/01/01"
-startDateStr <- "2016/01/01"
+startDateStr <- "2012/01/01"
+#startDateStr <- "2016/01/01"
 endDateStr <- "2016/12/31"
 #endDateStr <- "2016/01/31"
 
