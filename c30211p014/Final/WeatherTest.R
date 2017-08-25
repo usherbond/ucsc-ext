@@ -188,6 +188,8 @@ getCleanPWSDataRange <- function(stationName, startDate, endDate) {
   return(finalDF)
 }
 
+# Useless function that compares the server data vs our cache
+# Server typically gives different results.
 testDate <- function(testDay) {
   myDate <- as.Date(testDay)
   cachedDF <- getPWSData("IYUCATNT2",as.Date(myDate))
@@ -196,69 +198,6 @@ testDate <- function(testDay) {
   print(all.equal(cachedDF,webDF))
   print("Equal row compare")
   print(all.equal(webDF[(webDF$Time.1 %in% cachedDF$Time.1),],cachedDF))
-}
-
-retList <- function() {
-  return(list(1,2))
-}
-
-mySplitDate <- function(dateQuerry) {
-  if (!is.Date(dateQuerry)) {
-    stop("dateQuery should be a Date")
-  }
-  return(list(year=year(dateQuerry),month=month(dateQuerry),day=day(dateQuerry)))
-}
-
-processDate <- function(dateQuerry) {
-  if (!is.Date(dateQuerry)) {
-    stop("dateQuery should be a Date")
-  }
-  # The following function can't be called in parallel:
-  weatherDF <- getPWSData("IYUCATNT2",dateQuerry)
-  # Processing the DF to obtain different statistics:
-  results <- list(
-    speedQ95 = quantile(weatherDF$WindSpeedMPH,0.95),
-    maxSpeed = max(weatherDF$WindSpeedMPH),
-    avgDir = mean(weatherDF$WindDirectionDegrees),
-    # Following is inacurate but it is just to get a string:
-    medDir = median(weatherDF$WindDirection,na.rm=TRUE)
-  )
-  #return(results$speedQ95)
-  return(results)
-}
-
-processDates <- function(dateQuerry) {
-  if (!is.Date(dateQuerry)) {
-    stop("dateQuery should be a Date")
-  }
-  resultMatrix <- sapply(dateQuerry,processDate)
-  # Transpose seems to work even when we have mixed types
-  return(t(resultMatrix))
-}
-
-#test <- getDetailedWeather("IYUCATNT2", "2017-21-01",station_type='id',opt_all_columns=T)
-#cachedDF <- getPWSData("IYUCATNT2",as.Date("2017-02-28"))
-#webDF <- getPWSData("IYUCATNT2",as.Date("2017-02-28"),T)
-#print("Raw compare")
-#print(all.equal(cachedDF,webDF))
-#print("Equal row compare")
-#print(all.equal(webDF[(webDF$Time.1 %in% cachedDF$Time.1),],cachedDF))
-
-#testDate("2017-04-01")
-
-#quantile(webDF$WindSpeedMPH,0.95)
-
-# This is 
-#http://climate.umn.edu/snow_fence/components/winddirectionanddegreeswithouttable3.htm
-#attr(data$dateTime, "tzone") <- "Europe/Paris"
-
-demoZoo <- function() {
-  myZoo<- getPWSZoo("IYUCATNT2",as.Date("2014-12-24"))
-  zooTimes <- time(myZoo)
-  timeDiff <- zooTimes[14]-zooTimes[3]
-  print(timeDiff)
-  print(timeDiff>hours(1))
-  plot(myZoo$WindSpeedMPH)
 }
 
 demoWindRose <- function() {
@@ -292,7 +231,7 @@ periodLength <- function(measurements,threshVal,threshLength) {
   return(perLen)
 }
 
-# TODO: Querry the location from a somewhere but for now hard coded
+# TODO: Querry the location from somewhere but for now hard coded
 getPWSLocation <- function(stationName) {
   if (!is.character(stationName)) {
     stop("stationName should be a string")
