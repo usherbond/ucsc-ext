@@ -7,7 +7,13 @@ library(maptools)
 library(ggplot2)
 library(ggmap)
 
-# Gets the station data from the csv cache if it exists or queries the web
+#####################################################################
+# DATA QUERY & CLEAN-UP
+#####################################################################
+
+# Gets the station data from the csv cache if it exists or queries the web.
+# It requires weatherData package for web access but it won't work correctly
+# with the current CRAN version.
 getPWSData <- function(stationName,dateQuery,forceWebQuery=FALSE) {
   if (!is.character(stationName)) {
     stop("stationName should be a string")
@@ -46,6 +52,7 @@ getPWSData <- function(stationName,dateQuery,forceWebQuery=FALSE) {
   }
 }
 
+# Conversion from data frame to time series
 convertPWSData2Zoo <- function(pwsDF) {
   if (!is.data.frame(pwsDF)) {
     stop("input pwsDF should be a data.frame")
@@ -108,24 +115,6 @@ getRawData <- function(stationName, startDate, endDate=startDate) {
   return(list(data=finalDF,records=length(rec),badRecords=missingNum))
 }
  
-# Raw data demo this is a sketch only for the Rmds, only used for debug
-exploreRawData <- function(stationName, startDate, endDate=startDate) {
-  dataList <-getRawData(stationName, startDate, endDate)
-  finalDF <- dataList$data
-
-  print(sprintf("The number of missing day records from %s to %s in %s is %d",
-                startDate,endDate,stationName,dataList$badRecords))
-  print(summary(finalDF))
-  write.csv(finalDF, "test.csv")
-  intervals <- with(finalDF,difftime(Time[-1],Time[-length(Time)]))
-  print(head(sort(table(intervals),decreasing=TRUE)))
-  print(mean(intervals))
-  print(fivenum(intervals))
-  
-  # Timestamps may be duplicated:
-  print(finalDF$Time[duplicated(finalDF$Time)])
-}
-
 interpolateZoo <- function(myZoo) {
   #1. Create a new empty data set (zoo) with only a 5min time series
   resample <- seq(start(myZoo),end(myZoo),by="5 mins")
@@ -188,49 +177,6 @@ getCleanPWSDataRange <- function(stationName, startDate, endDate) {
   return(finalDF)
 }
 
-# Useless function that compares the server data vs our cache
-# Server typically gives different results.
-testDate <- function(testDay) {
-  myDate <- as.Date(testDay)
-  cachedDF <- getPWSData("IYUCATNT2",as.Date(myDate))
-  webDF <- getPWSData("IYUCATNT2",as.Date(myDate),T)
-  print("Raw compare")
-  print(all.equal(cachedDF,webDF))
-  print("Equal row compare")
-  print(all.equal(webDF[(webDF$Time.1 %in% cachedDF$Time.1),],cachedDF))
-}
-
-demoWindRose <- function() {
-  dates <- seq(as.Date("2012/1/1"), as.Date("2016/12/31"), by="days")
-  badDates <- as.Date(readLines('bad_dates.txt'))
-  dates <- dates[!(dates %in% badDates)]
-  print(dates)
-  # Workaround for march 14 and 15 from 2013 which miss the SolarRadiationWatts_m_2
-  res <- lapply(dates,function(x) {
-    tmpdf <- getPWSData("IYUCATNT2",x)
-    #return(tmpdf)
-    if (is.null(tmpdf)) {return(NULL)}
-    testData <- subset(tmpdf,select=c("Time","WindDirectionDegrees","WindSpeedMPH"))
-    return(testData)
-    })
-  cachedDF <- do.call(rbind,res)
-  #testData <- subset(cachedDF,select=c("Time","WindDirectionDegrees","WindSpeedMPH"))
-  ren <- rename(cachedDF,date=Time,ws=WindSpeedMPH,wd=WindDirectionDegrees)
-  write.csv(ren, "test.csv")
-  print(str(ren))
-  windRose(ren,cols='heat',type='month',angle=18,paddle=F,ws.int=5,breaks=6,key.footer='mph')
-  calendarPlot(ren,pollutant = 'ws',year=2015,annotate='ws')
-  # random forest
-}
-
-periodLength <- function(measurements,threshVal,threshLength) {
-  measurements[is.na(measurements)] <- 0
-  rleVec <- rle(measurements>=threshVal)
-  contPeriods <- rleVec$lengths[rleVec$values]
-  perLen <- sum(contPeriods[contPeriods>=threshLength])
-  return(perLen)
-}
-
 # TODO: Querry the location from somewhere but for now hard coded
 getPWSLocation <- function(stationName) {
   if (!is.character(stationName)) {
@@ -252,13 +198,16 @@ getPWSLocation <- function(stationName) {
   return(loc)
 }
 
-getPWSMap <- function(stationName) {
-  loc <- getPWSLocation(stationName)
-  map <- get_map(location="Yucatan",zoom=5)
-  plt <- ggmap(map) +
-    geom_point(aes(x = lon, y = lat), data = data.frame(loc), alpha = .75, col='red', size=2) +
-    labs(title=paste("Location of Station",stationName), x="", y="")
-  return(plt)
+#####################################################################
+# COMPUTATION
+#####################################################################
+
+periodLength <- function(measurements,threshVal,threshLength) {
+  measurements[is.na(measurements)] <- 0
+  rleVec <- rle(measurements>=threshVal)
+  contPeriods <- rleVec$lengths[rleVec$values]
+  perLen <- sum(contPeriods[contPeriods>=threshLength])
+  return(perLen)
 }
 
 computeDailySummary <- function(wholeDF,location,thresHourPeriod ) {
@@ -314,6 +263,21 @@ computeMontlySummary <- function(dailySummary) {
 
 }
 
+#####################################################################
+# PLOTTING FUNCTIONS
+#####################################################################
+
+windRoseCleanData <- function(cleanData) {
+  windRose(
+    rename(cleanData,ws=WindSpeedMPH,wd=WindDirectionDegrees,date=Time),
+    cols='heat',
+    type='month',
+    angle=18,
+    paddle=FALSE,
+    ws.int=5,
+    breaks=6,
+    key.footer='mph')
+}
 
 calendarDailySummary <- function(dailySummary, targetYear) {
   calDF <- dailySummary %>%
@@ -331,8 +295,6 @@ calendarDailySummary <- function(dailySummary, targetYear) {
     main=sprintf("Kiting days in %s",targetDate)
   )
 }
-
-
 
 ggplotMontlySummary <- function(monthlySummary,startDateString,endDateString) {
   startYear <- year(startDateString)
@@ -358,26 +320,76 @@ ggplotMontlySummary <- function(monthlySummary,startDateString,endDateString) {
   return(plt)
 }
 
-windRoseCleanData <- function(cleanData) {
-  windRose(
-    rename(cleanData,ws=WindSpeedMPH,wd=WindDirectionDegrees,date=Time),
-    cols='heat',
-    type='month',
-    angle=18,
-    paddle=FALSE,
-    ws.int=5,
-    breaks=6,
-    key.footer='mph')
+getPWSMap <- function(stationName) {
+  loc <- getPWSLocation(stationName)
+  map <- get_map(location="Yucatan",zoom=5)
+  plt <- ggmap(map) +
+    geom_point(aes(x = lon, y = lat), data = data.frame(loc), alpha = .75, col='red', size=2) +
+    labs(title=paste("Location of Station",stationName), x="", y="")
+  return(plt)
+}
+
+#####################################################################
+# DEMOS & TESTING
+#####################################################################
+
+demoWindRose <- function() {
+  dates <- seq(as.Date("2012/1/1"), as.Date("2016/12/31"), by="days")
+  badDates <- as.Date(readLines('bad_dates.txt'))
+  dates <- dates[!(dates %in% badDates)]
+  print(dates)
+  # Workaround for march 14 and 15 from 2013 which miss the SolarRadiationWatts_m_2
+  res <- lapply(dates,function(x) {
+    tmpdf <- getPWSData("IYUCATNT2",x)
+    #return(tmpdf)
+    if (is.null(tmpdf)) {return(NULL)}
+    testData <- subset(tmpdf,select=c("Time","WindDirectionDegrees","WindSpeedMPH"))
+    return(testData)
+    })
+  cachedDF <- do.call(rbind,res)
+  #testData <- subset(cachedDF,select=c("Time","WindDirectionDegrees","WindSpeedMPH"))
+  ren <- rename(cachedDF,date=Time,ws=WindSpeedMPH,wd=WindDirectionDegrees)
+  write.csv(ren, "test.csv")
+  print(str(ren))
+  windRose(ren,cols='heat',type='month',angle=18,paddle=F,ws.int=5,breaks=6,key.footer='mph')
+  calendarPlot(ren,pollutant = 'ws',year=2015,annotate='ws')
+}
+
+# Useless function that compares the server data vs our cache
+# Server typically gives different results.
+testDate <- function(testDay) {
+  myDate <- as.Date(testDay)
+  cachedDF <- getPWSData("IYUCATNT2",as.Date(myDate))
+  webDF <- getPWSData("IYUCATNT2",as.Date(myDate),T)
+  print("Raw compare")
+  print(all.equal(cachedDF,webDF))
+  print("Equal row compare")
+  print(all.equal(webDF[(webDF$Time.1 %in% cachedDF$Time.1),],cachedDF))
+}
+
+# Raw data demo this is a sketch only for the Rmds, only used for debug
+exploreRawData <- function(stationName, startDate, endDate=startDate) {
+  dataList <-getRawData(stationName, startDate, endDate)
+  finalDF <- dataList$data
+
+  print(sprintf("The number of missing day records from %s to %s in %s is %d",
+                startDate,endDate,stationName,dataList$badRecords))
+  print(summary(finalDF))
+  write.csv(finalDF, "test.csv")
+  intervals <- with(finalDF,difftime(Time[-1],Time[-length(Time)]))
+  print(head(sort(table(intervals),decreasing=TRUE)))
+  print(mean(intervals))
+  print(fivenum(intervals))
+  
+  # Timestamps may be duplicated:
+  print(finalDF$Time[duplicated(finalDF$Time)])
 }
 
 
 
 
+if (FALSE) {
 
-if (TRUE) {
-# Worked with this one:
-# lon, lat
-#loc <- matrix(c(-89.3,21.3),nrow=1)
 stationID <- "IYUCATNT2"
 loc <- getPWSLocation(stationID)
 startDateStr <- "2012/01/01"
@@ -386,8 +398,8 @@ endDateStr <- "2016/12/31"
 
 startRunTime <- Sys.time() 
 
-#pmap <- getPWSMap(stationID)
-#print(pmap)
+pmap <- getPWSMap(stationID)
+print(pmap)
 
 df <- getCleanPWSDataRange(stationID,startDateStr,endDateStr) #Whole
 windRoseCleanData(df)
