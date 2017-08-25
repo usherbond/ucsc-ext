@@ -12,10 +12,13 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 # Motivation
+Kiteboarding is an adventure watersport that consists of using a large steerable kite to pull yourself around on a board on top of the water. The kites are controlled through the bar and lines that connect to your harness, which is worn around your midsection. The kite can be flown specific patterns to generate power, and can even be used to jump high in the air. And when we say jump, we really mean it. Professional kiteboarders can jump 50 or 60 feet high and can easily float for hundreds of feet when the conditions are right. That's nearly 10 seconds of air time!
+Kite boarding is the fastest growing watersport in the world. The key to this sport is the Wind. This is what motivated us to do our analysis on Wind. 
+Wind being the key element of kiteboarding, there are a lot of details that come into play for a safe and good ride. Wind direction and wind power are the two most important elements for kiteboarders. The wind direction to be on-shore or side on-shore and the power to create enough power and acceleration for kiting. Wind power is normally measured in MPH or Knots. A good kite boarding day starts at 15MPH. That being said, too much power is not safe. Meaning that smaller size kites are used for more powerful winds. Normally kiteboarders look at increments of wind to choose their kites. For a 15 - 20 MPH, a 12 meter kite does a great job. For stronger winds between 20 - 25 perhaps a 9 meter is good for an average weighted person. for over 25+ MPH depending on the skill level smaller kites should be used. Below is a good reference to learn more about winds and kiting:
+http://www.gokite.com.au/resources/education/understanding-the-wind/
 
-Explain what is kiteboarding
-
-Explain kite sizes and why we separate in 15, 20 and 25 mph
+The purpose of this analysis is to find the best windy days that you can travel to Northern Yucutan for your kiting vacation. 
+Happy Kiting!
 
 # Data
 
